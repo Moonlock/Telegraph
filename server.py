@@ -13,18 +13,20 @@ def signal_handler(sig, frame):
     sys.exit()
 
 def handleMessage(msg):
+    sonicPiCode = ""
     for byte in msg:
         symbols = parseSymbols(byte)
         while symbols:
             symbol = symbols.pop()
             if symbol == Symbol.DOT:
-                playSymbol(TIME_UNIT)
+                sonicPiCode = addSymbolToCode(sonicPiCode, TIME_UNIT)
             elif symbol == Symbol.DASH:
-                playSymbol(3*TIME_UNIT)
+                sonicPiCode = addSymbolToCode(sonicPiCode, 3*TIME_UNIT)
             elif symbol == Symbol.CHAR_SPACE:
-                playSymbol(0, 2*TIME_UNIT)
+                sonicPiCode = addSymbolToCode(sonicPiCode, 0, 2*TIME_UNIT)
             elif symbol == Symbol.WORD_SPACE:
-                playSymbol(0, 6*TIME_UNIT)
+                sonicPiCode = addSymbolToCode(sonicPiCode, 0, 6*TIME_UNIT)
+    call(["sonic_pi", sonicPiCode])
 
 def parseSymbols(byte):
     symbols = []
@@ -32,9 +34,10 @@ def parseSymbols(byte):
         symbols.append((byte >> i*2) & 0x3)
     return symbols
 
-def playSymbol(duration, sleep=TIME_UNIT):
-    call(["sonic_pi", "play 80, release: " + str(duration)])
-    call(["sonic_pi", "sleep " + str(sleep)])
+def addSymbolToCode(code, duration, sleep=TIME_UNIT):
+    code += "play 80, release: " + str(duration) + ";" if duration else ""
+    code += "sleep " + str(sleep) + ";"
+    return code
 
 def run(port):
     signal.signal(signal.SIGINT, signal_handler)
