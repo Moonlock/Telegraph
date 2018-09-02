@@ -18,9 +18,9 @@ def handleMessage(msg):
         symbols = parseSymbols(byte)
         while symbols:
             symbol = symbols.pop()
-            if symbol == Symbol.DOT:
+            if symbol == Symbol.DIT:
                 sonicPiCode = addSymbolToCode(sonicPiCode, TIME_UNIT)
-            elif symbol == Symbol.DASH:
+            elif symbol == Symbol.DAH:
                 sonicPiCode = addSymbolToCode(sonicPiCode, 3*TIME_UNIT)
             elif symbol == Symbol.CHAR_SPACE:
                 sonicPiCode = addSymbolToCode(sonicPiCode, 0, 2*TIME_UNIT)
