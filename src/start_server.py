@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-import server
+from server import server
 import sys
 
 DEFAULT_PORT = 8000
