@@ -1,40 +1,40 @@
 from symbols import Symbol as s
+from collections import OrderedDict
 
-morse = {
-    'a': [s.DIT, s.DAH],
-    'b': [s.DAH, s.DIT, s.DIT],
-    'c': [s.DAH, s.DIT, s.DAH, s.DIT],
-    'd': [s.DAH, s.DIT, s.DIT],
-    'e': [s.DIT],
-    'f': [s.DIT, s.DIT, s.DAH, s.DIT],
-    'g': [s.DAH, s.DAH, s.DIT],
-    'h': [s.DIT, s.DIT, s.DIT, s.DIT],
-    'i': [s.DIT, s.DIT],
-    'j': [s.DIT, s.DAH, s.DAH, s.DAH],
-    'k': [s.DAH, s.DIT, s.DAH],
-    'l': [s.DIT, s.DAH, s.DIT, s.DIT],
-    'm': [s.DAH, s.DAH],
-    'n': [s.DAH, s.DIT],
-    'o': [s.DAH, s.DAH, s.DAH],
-    'p': [s.DIT, s.DAH, s.DAH, s.DIT],
-    'q': [s.DAH, s.DAH, s.DIT, s.DAH],
-    'r': [s.DIT, s.DAH, s.DIT],
-    's': [s.DIT, s.DIT, s.DIT],
-    't': [s.DAH],
-    'u': [s.DIT, s.DIT, s.DAH],
-    'v': [s.DIT, s.DIT, s.DIT, s.DAH],
-    'w': [s.DIT, s.DAH, s.DAH],
-    'x': [s.DAH, s.DIT, s.DIT, s.DAH],
-    'y': [s.DAH, s.DIT, s.DAH, s.DAH],
-    'z': [s.DAH, s.DAH, s.DIT, s.DIT],
-    '0': [s.DAH, s.DAH, s.DAH, s.DAH, s.DAH],
-    '1': [s.DIT, s.DAH, s.DAH, s.DAH, s.DAH],
-    '2': [s.DIT, s.DIT, s.DAH, s.DAH, s.DAH],
-    '3': [s.DIT, s.DIT, s.DIT, s.DAH, s.DAH],
-    '4': [s.DIT, s.DIT, s.DIT, s.DIT, s.DAH],
-    '5': [s.DIT, s.DIT, s.DIT, s.DIT, s.DIT],
-    '6': [s.DAH, s.DIT, s.DIT, s.DIT, s.DIT],
-    '7': [s.DAH, s.DAH, s.DIT, s.DIT, s.DIT],
-    '8': [s.DAH, s.DAH, s.DAH, s.DIT, s.DIT],
-    '9': [s.DAH, s.DAH, s.DAH, s.DAH, s.DIT]
-}
+morse = OrderedDict()
+morse['a'] = [s.DIT, s.DAH]
+morse['b'] = [s.DAH, s.DIT, s.DIT]
+morse['c'] = [s.DAH, s.DIT, s.DAH, s.DIT]
+morse['d'] = [s.DAH, s.DIT, s.DIT]
+morse['e'] = [s.DIT]
+morse['f'] = [s.DIT, s.DIT, s.DAH, s.DIT]
+morse['g'] = [s.DAH, s.DAH, s.DIT]
+morse['h'] = [s.DIT, s.DIT, s.DIT, s.DIT]
+morse['i'] = [s.DIT, s.DIT]
+morse['j'] = [s.DIT, s.DAH, s.DAH, s.DAH]
+morse['k'] = [s.DAH, s.DIT, s.DAH]
+morse['l'] = [s.DIT, s.DAH, s.DIT, s.DIT]
+morse['m'] = [s.DAH, s.DAH]
+morse['n'] = [s.DAH, s.DIT]
+morse['o'] = [s.DAH, s.DAH, s.DAH]
+morse['p'] = [s.DIT, s.DAH, s.DAH, s.DIT]
+morse['q'] = [s.DAH, s.DAH, s.DIT, s.DAH]
+morse['r'] = [s.DIT, s.DAH, s.DIT]
+morse['s'] = [s.DIT, s.DIT, s.DIT]
+morse['t'] = [s.DAH]
+morse['u'] = [s.DIT, s.DIT, s.DAH]
+morse['v'] = [s.DIT, s.DIT, s.DIT, s.DAH]
+morse['w'] = [s.DIT, s.DAH, s.DAH]
+morse['x'] = [s.DAH, s.DIT, s.DIT, s.DAH]
+morse['y'] = [s.DAH, s.DIT, s.DAH, s.DAH]
+morse['z'] = [s.DAH, s.DAH, s.DIT, s.DIT]
+morse['0'] = [s.DAH, s.DAH, s.DAH, s.DAH, s.DAH]
+morse['1'] = [s.DIT, s.DAH, s.DAH, s.DAH, s.DAH]
+morse['2'] = [s.DIT, s.DIT, s.DAH, s.DAH, s.DAH]
+morse['3'] = [s.DIT, s.DIT, s.DIT, s.DAH, s.DAH]
+morse['4'] = [s.DIT, s.DIT, s.DIT, s.DIT, s.DAH]
+morse['5'] = [s.DIT, s.DIT, s.DIT, s.DIT, s.DIT]
+morse['6'] = [s.DAH, s.DIT, s.DIT, s.DIT, s.DIT]
+morse['7'] = [s.DAH, s.DAH, s.DIT, s.DIT, s.DIT]
+morse['8'] = [s.DAH, s.DAH, s.DAH, s.DIT, s.DIT]
+morse['9'] = [s.DAH, s.DAH, s.DAH, s.DAH, s.DIT]
