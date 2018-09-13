@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 morse = OrderedDict()
 morse['a'] = [s.DIT, s.DAH]
-morse['b'] = [s.DAH, s.DIT, s.DIT]
+morse['b'] = [s.DAH, s.DIT, s.DIT, s.DIT]
 morse['c'] = [s.DAH, s.DIT, s.DAH, s.DIT]
 morse['d'] = [s.DAH, s.DIT, s.DIT]
 morse['e'] = [s.DIT]
