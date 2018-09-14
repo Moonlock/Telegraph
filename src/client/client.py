@@ -1,5 +1,8 @@
+import signal
+import socket
+
 from RPi import GPIO
-from time import time
+from time import time, sleep
 
 from symbols import Symbol
 
@@ -34,6 +37,16 @@ def timeRelease():
 	return (now - lastRelease) * 1000
 
 
+def initCallback(channel):
+	# Hacky way to wait until bouncing stops
+	# until I get a capacitor.
+	sleep(0.050)
+
+	if GPIO.input(channel) == 1:
+		initHandlePress()
+	else:
+		initHandleRelease()
+
 def initHandlePress():
 	releaseTimeMs = timeRelease()
 
@@ -64,7 +77,7 @@ def checkStart():
 
 def startMessage():
 	addInitialization()
-	resetCallbacks(handlePress, handleRelease)
+	resetCallbacks(messageCallback)
 
 def addInitialization():
 	message.append(Symbol.DAH)
@@ -74,13 +87,24 @@ def addInitialization():
 	message.append(Symbol.DAH)
 	message.append(Symbol.WORD_SPACE)
 
+def messageCallback(channel):
+	# Hacky way to wait until bouncing stops
+	# until I get a capacitor.
+	sleep(0.050)
+
+	if GPIO.input(channel) == 1:
+		handlePress()
+	else:
+		handleRelease()
+
 def handlePress():
 	releaseTimeMs = timeRelease()
 
-	if pressTimeMs > 5*timeUnit:
+	if releaseTimeMs > 5*timeUnit:
 		message.append(Symbol.WORD_SPACE)
-	elif pressTimeMs >= 2*timeUnit:
+	elif releaseTimeMs >= 2*timeUnit:
 		message.append(Symbol.CHAR_SPACE)
+	checkFinish()
 
 def handleRelease():
 	pressTimeMs = timePress()
@@ -89,24 +113,24 @@ def handleRelease():
 		message.append(Symbol.DIT)
 	else:
 		message.append(Symbol.DAH)
+	checkFinish()
 
 def checkFinish():
 	if message[-5:] == END_MESSAGE:
 		sendMessage()
 		message.clear()
-		resetCallbacks(initHandlePress, initHandleRelease)
+		resetCallbacks(initCallback)
 
 def sendMessage():
 	try:
-		s.sendall(message)
+		# TODO: send message
 	except socket.error as e:
 		print("Failed to send message.  {}: {}".format(e.errno, e.strerror))
 		sys.exit()
 
-def resetCallbacks(pressCb, releaseCb):
-	GPIO.remove_event_detect(PIN_NUM)
-	GPIO.add_event_detect(PIN_NUM, GPIO.RISING, callback=pressCb, bouncetime=40)
-	GPIO.add_event_detect(PIN_NUM, GPIO.RISING, callback=releaseCb, bouncetime=40)
+def resetCallbacks(callback):
+	GPIO.remove_event_detect(CHANNEL)
+	GPIO.add_event_detect(CHANNEL, GPIO.BOTH, callback=callback, bouncetime=50)
 
 def connectToServer():
 	try:
@@ -123,5 +147,7 @@ def run():
 	connectToServer()
 
 	GPIO.setmode(GPIO.BCM)
-	GPIO.setup(PIN_NUM, GPIO.IN)
-	resetCallbacks(initHandlePress, initHandleRelease)
+	GPIO.setup(CHANNEL, GPIO.IN)
+	resetCallbacks(initCallback)
+
+	signal.pause()
