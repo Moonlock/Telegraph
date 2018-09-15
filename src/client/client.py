@@ -1,6 +1,7 @@
 import signal
 import socket
 
+from math import ceil
 from RPi import GPIO
 from time import time, sleep
 
@@ -118,15 +119,22 @@ def handleRelease():
 def checkFinish():
 	if message[-5:] == END_MESSAGE:
 		sendMessage()
-		message.clear()
 		resetCallbacks(initCallback)
 
 def sendMessage():
 	try:
-		# TODO: send message
+		s.sendall( createMessage() )
 	except socket.error as e:
 		print("Failed to send message.  {}: {}".format(e.errno, e.strerror))
 		sys.exit()
+
+def createMessage():
+	messageData = 0
+	messageLen = len(message)
+	for i in range(messageLen):
+		symbol = message.pop()
+		messageData |= (symbol << i*2)
+	return messageData.to_bytes(ceil(messageLen/4), byteorder='big')
 
 def resetCallbacks(callback):
 	GPIO.remove_event_detect(CHANNEL)
