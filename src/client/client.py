@@ -1,5 +1,6 @@
 import signal
 import socket
+import sys
 
 from math import ceil
 from RPi import GPIO
@@ -41,7 +42,7 @@ def timeRelease():
 def initCallback(channel):
 	# Hacky way to wait until bouncing stops
 	# until I get a capacitor.
-	sleep(0.050)
+	sleep(0.040)
 
 	if GPIO.input(channel) == 1:
 		initHandlePress()
@@ -66,9 +67,9 @@ def checkStart():
 	dahs = initTimings[1::4]
 	dits = initTimings[3::4]
 	spaces = initTimings[2::2]
+	initTimings.clear()
 
 	if min(dahs) < 2*max(dits + spaces):
-		initTimings.clear()
 		return
 
 	global timeUnit
@@ -91,7 +92,7 @@ def addInitialization():
 def messageCallback(channel):
 	# Hacky way to wait until bouncing stops
 	# until I get a capacitor.
-	sleep(0.050)
+	sleep(0.040)
 
 	if GPIO.input(channel) == 1:
 		handlePress()
