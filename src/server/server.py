@@ -36,7 +36,7 @@ def parseSymbols(byte):
 
 def addSymbolToCode(code, duration, sleep=TIME_UNIT):
     code += "play 80, release: " + str(duration) + ";" if duration else ""
-    code += "sleep " + str(sleep) + ";"
+    code += "sleep " + str(sleep + duration) + ";"
     return code
 
 def run(port):
