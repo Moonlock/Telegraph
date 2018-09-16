@@ -8,6 +8,8 @@ from time import time, sleep
 
 from symbols import Symbol
 
+DEBUG = False
+
 CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
 END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
@@ -24,11 +26,16 @@ timeUnit = 0
 def handleSigInt(sig, frame):
 	GPIO.cleanup()
 
+def debug(message):
+	if DEBUG:
+		print(message)
+
 def timePress():
 	now = time()
 
 	global lastRelease
 	lastRelease = now
+	debug("Press: " + str(int((now - lastPress) * 1000)))
 	return (now - lastPress) * 1000
 
 def timeRelease():
@@ -36,6 +43,7 @@ def timeRelease():
 
 	global lastPress
 	lastPress = now
+	debug("Release: " + str(int((now - lastRelease) * 1000)))
 	return (now - lastRelease) * 1000
 
 
@@ -70,10 +78,12 @@ def checkStart():
 	initTimings.clear()
 
 	if min(dahs) < 2*max(dits + spaces):
+		debug("Init sequence incorrect.")
 		return
 
 	global timeUnit
 	timeUnit = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
+	debug("Starting")
 	startMessage()
 
 
@@ -119,6 +129,7 @@ def handleRelease():
 
 def checkFinish():
 	if message[-5:] == END_MESSAGE:
+		debug("Sending message.")
 		sendMessage()
 		resetCallbacks(initCallback)
 
