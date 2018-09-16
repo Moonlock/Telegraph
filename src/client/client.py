@@ -123,8 +123,13 @@ def checkFinish():
 		resetCallbacks(initCallback)
 
 def sendMessage():
+	connectToServer()
+	sendToServer(createMessage())
+	s.close()
+
+def sendToServer(message):
 	try:
-		s.sendall( createMessage() )
+		s.sendall(message)
 	except socket.error as e:
 		print("Failed to send message.  {}: {}".format(e.errno, e.strerror))
 		sys.exit()
@@ -153,7 +158,6 @@ def connectToServer():
 
 def run():
 	signal.signal(signal.SIGINT, handleSigInt)
-	connectToServer()
 
 	GPIO.setmode(GPIO.BCM)
 	GPIO.setup(CHANNEL, GPIO.IN)
