@@ -14,9 +14,6 @@ CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
 END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
-SERVER = 'localhost'
-PORT = 8000
-
 message = []
 initTimings = []
 lastPress = 0
@@ -162,13 +159,18 @@ def connectToServer():
 		global s
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		s.connect((SERVER, int(PORT)))
+		s.connect((server, int(port)))
 	except socket.error as e:
 		print("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
 		sys.exit()
 
-def run():
+def run(serv, servPort):
 	signal.signal(signal.SIGINT, handleSigInt)
+
+	global server
+	global port
+	server = serv
+	port = servPort
 
 	GPIO.setmode(GPIO.BCM)
 	GPIO.setup(CHANNEL, GPIO.IN)
