@@ -2,4 +2,4 @@
 
 from learnMorse import learnMorse
 
-learnMorse.run()
+learnMorse.morseTest(20, 10, 2, 300)

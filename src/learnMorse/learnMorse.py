@@ -6,59 +6,59 @@ from symbols import Symbol
 from threading import Timer
 from time import sleep
 
-CHAR_WPM = 20
-OVERALL_WPM = 10
-NUM_CHARS = 2
 
 COUNTS_PER_WORD = 50
 MS_PER_MINUTE = 60000
-MS_PER_COUNT = MS_PER_MINUTE / (COUNTS_PER_WORD * CHAR_WPM)
 
-ta = (60*CHAR_WPM - 37.2*OVERALL_WPM) / (CHAR_WPM * OVERALL_WPM)
-ts = 1.0 / (CHAR_WPM/60.0 * COUNTS_PER_WORD)
-tc = 3*ta / 19 - ts
-tw = 7*ta / 19 - ts
+class morseTest:
 
-def dit():
-    subprocess.call(["paplay", "learnMorse/sounds/dot-20wpm.ogg"])
-    sleep(ts)
+	def __init__(self, charWpm, overallWpm, numChars, testTime):
 
-def dah():
-    subprocess.call(["paplay", "learnMorse/sounds/dash-20wpm.ogg"])
-    sleep(ts)
+		self.charWpm = charWpm
+		self.overallWpm = overallWpm
+		self.msPerCount = MS_PER_MINUTE / (COUNTS_PER_WORD * self.charWpm)
 
-def charSpace():
-    sleep(tc)
+		# Equations from http://www.arrl.org/files/file/Technology/x9004008.pdf
+		totalDelay = (60*self.charWpm - 37.2*self.overallWpm) / \
+					 (self.charWpm * self.overallWpm)
+		self.symbolSpace = 1.0 / (self.charWpm/60.0 * COUNTS_PER_WORD)
+		self.charSpace = 3*totalDelay / 19 - self.symbolSpace
+		self.wordSpace = 7*totalDelay / 19 - self.symbolSpace
 
-def wordSpace():
-    sleep(tw)
+		self.chars = []
+		for x in range(numChars):
+		    self.chars.append(morse.popitem(0))
 
-play = {
-    Symbol.DIT: dit,
-    Symbol.DAH: dah,
-    }
+		sleep(2)
+		self.running = True
+		timer = Timer(testTime, self.stopTest)
+		timer.start()
+		self.startTest()
 
-chars = []
-for x in range(NUM_CHARS):
-    chars.append(morse.popitem(0))
+	def dit(self):
+	    subprocess.call(["paplay", "learnMorse/sounds/dot-20wpm.ogg"])
+	    sleep(self.symbolSpace)
 
-def startTest():
-    while running:
-        wordLength = random.choice(range(10)) + 1
-        for x in range(wordLength):
-            char = random.choice(chars)
-            for symbol in char[1]:
-                play[symbol]()
-            charSpace()
-        wordSpace()
+	def dah(self):
+	    subprocess.call(["paplay", "learnMorse/sounds/dash-20wpm.ogg"])
+	    sleep(self.symbolSpace)
 
-def stopTest():
-    global running
-    running = False
+	def startTest(self):
 
-def run():
-    global running
-    running = True
-    timer = Timer(300, stopTest)
-    timer.start()
-    startTest()
+		play = {
+			Symbol.DIT: self.dit,
+			Symbol.DAH: self.dah,
+		}
+
+	    while self.running:
+	        wordLength = random.choice(range(10)) + 1
+	        for x in range(wordLength):
+	            char = random.choice(self.chars)
+	            for symbol in char[1]:
+	                play[symbol]()
+	            sleep(self.charSpace)
+	        sleep(self.wordSpace)
+
+	def stopTest(self):
+	    self.running = False
+
