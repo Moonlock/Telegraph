@@ -1,6 +1,7 @@
 import difflib
 import random
 import subprocess
+import sys
 
 from learnMorse.alphabet import morse
 from symbols import Symbol
@@ -61,6 +62,7 @@ class morseTest:
 
 		print("Enter what you hear:")
 		print(" > ", end="")
+		sys.stdout.flush()
 
 		while self.running > 0:
 			wordLength = random.choice(range(10)) + 1
