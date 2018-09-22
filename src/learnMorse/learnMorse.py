@@ -76,14 +76,14 @@ class morseTest:
 		self.masterList.pop()
 
 		response = input()
-		print("   " + "".join(self.masterList))
-		self.checkAnswer(response.lower())
+		master = "".join(self.masterList)
+		print("   " + master)
+		self.checkAnswer(response.lower(), master)
 
-	def checkAnswer(self, response):
-		diff = difflib.SequenceMatcher(None, ''.join(self.masterList), response)
+	def checkAnswer(self, response, master):
+		diff = difflib.SequenceMatcher(None, master, response, autojunk=False)
 		score = diff.ratio()
 		print(score)
 
 	def stopTest(self):
 		self.running = False
-
