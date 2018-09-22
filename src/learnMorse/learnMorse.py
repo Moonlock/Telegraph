@@ -1,3 +1,4 @@
+import difflib
 import random
 import subprocess
 
@@ -58,7 +59,10 @@ class morseTest:
 			Symbol.DAH: self.playDah,
 		}
 
-		while self.running:
+		print("Enter what you hear:")
+		print(" > ", end="")
+
+		while self.running > 0:
 			wordLength = random.choice(range(10)) + 1
 			for x in range(wordLength):
 				char = random.choice(self.chars)
@@ -68,9 +72,17 @@ class morseTest:
 				self.playCharSpace()
 			self.playWordSpace()
 
-		for char in self.masterList:
-			print(char, end="")
-		print()
+		#Remove final word space
+		self.masterList.pop()
+
+		response = input()
+		print("   " + "".join(self.masterList))
+		self.checkAnswer(response.lower())
+
+	def checkAnswer(self, response):
+		diff = difflib.SequenceMatcher(None, ''.join(self.masterList), response)
+		score = diff.ratio()
+		print(score)
 
 	def stopTest(self):
 		self.running = False
