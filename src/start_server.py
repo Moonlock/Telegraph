@@ -1,9 +1,21 @@
 #! /usr/bin/python3
 
 from server import server
-import sys
+import configparser
+import setup
 
-DEFAULT_PORT = 8000
+config = configparser.ConfigParser()
+config.read('config.ini')
+if not config.sections():
+	print('Config file not found.')
+	response = input('Run setup script? [y/N]: ' or 'n')
+	if response.lower() == 'y':
+		setup.main()
+		config.read('config.ini')
+	else:
+		exit()
 
-port = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_PORT
+serverConfig = config['Server']
+port = serverConfig['Port']
+
 server.run(port)

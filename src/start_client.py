@@ -1,11 +1,22 @@
 #! /usr/bin/python3
 
 from client import client
-import sys
+import configparser
+import setup
 
-DEFAULT_SERVER = "localhost"
-DEFAULT_PORT = 8000
+config = configparser.ConfigParser()
+config.read('config.ini')
+if not config.sections():
+	print('Config file not found.')
+	response = input('Run setup script? [y/N]: ' or 'n')
+	if response.lower() == 'y':
+		setup.main()
+		config.read('config.ini')
+	else:
+		exit()
 
-server = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_SERVER
-port = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_PORT
+clientConfig = config['Client']
+server = clientConfig['Address']
+port = clientConfig['Port']
+
 client.run(server, port)
