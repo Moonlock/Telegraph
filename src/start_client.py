@@ -19,4 +19,4 @@ clientConfig = config['Client']
 server = clientConfig['Address']
 port = clientConfig['Port']
 
-client.run(server, port)
+client = client.Client(server, port)
