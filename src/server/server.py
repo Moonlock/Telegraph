@@ -7,55 +7,57 @@ import sys
 
 TIME_UNIT = 0.1
 
-def signal_handler(sig, frame):
-	print("Shutting down server.")
-	s.close()
-	sys.exit()
+SYMBOL_TIMINGS = {
+	Symbol.DIT: {"duration": TIME_UNIT, "sleep": 2*TIME_UNIT},
+	Symbol.DAH: {"duration": 3*TIME_UNIT, "sleep": 4*TIME_UNIT},
+	Symbol.CHAR_SPACE: {"duration": 0, "sleep": 3*TIME_UNIT},
+	Symbol.WORD_SPACE: {"duration": 0, "sleep": 7*TIME_UNIT},
+}
 
-def handleMessage(msg):
-	sonicPiCode = ""
-	for byte in msg:
-		symbols = parseSymbols(byte)
-		while symbols:
-			symbol = symbols.pop()
-			if symbol == Symbol.DIT:
-				sonicPiCode = addSymbolToCode(sonicPiCode, TIME_UNIT)
-			elif symbol == Symbol.DAH:
-				sonicPiCode = addSymbolToCode(sonicPiCode, 3*TIME_UNIT)
-			elif symbol == Symbol.CHAR_SPACE:
-				sonicPiCode = addSymbolToCode(sonicPiCode, 0, 2*TIME_UNIT)
-			elif symbol == Symbol.WORD_SPACE:
-				sonicPiCode = addSymbolToCode(sonicPiCode, 0, 6*TIME_UNIT)
-	call(["sonic_pi", sonicPiCode])
+class Server:
 
-def parseSymbols(byte):
-	symbols = []
-	for i in range(4):
-		symbols.append((byte >> i*2) & 0x3)
-	return symbols
+	def __init__(self, port):
+		signal.signal(signal.SIGINT, self.handleSigInt)
 
-def addSymbolToCode(code, duration, sleep=TIME_UNIT):
-	code += "play 80, release: " + str(duration) + ";" if duration else ""
-	code += "sleep " + str(sleep + duration) + ";"
-	return code
+		try:
+			self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.sock.bind(('', int(port)))
+		except socket.error as e:
+			print("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
+			sys.exit()
 
-def run(port):
-	signal.signal(signal.SIGINT, signal_handler)
+		self.sock.listen(10)
 
-	try:
-		global s
-		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		s.bind(('', int(port)))
-	except socket.error as e:
-		print("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
+		while True:
+			conn, addr = self.sock.accept()
+			data = conn.recv(1024)
+			conn.close()
+			self.handleMessage(data)
+
+	def handleSigInt(self, sig, frame):
+		print("Shutting down server.")
+		self.sock.close()
 		sys.exit()
 
-	s.listen(10)
+	def handleMessage(self, msg):
+		sonicPiCode = ""
+		for byte in msg:
+			symbols = self.parseSymbols(byte)
+			while symbols:
+				symbol = symbols.pop()
+				sonicPiCode = self.addSymbolToCode(SYMBOL_TIMINGS[symbol])
+		call(["sonic_pi", sonicPiCode])
 
-	while True:
-		conn, addr = s.accept()
-		data = conn.recv(1024)
-		conn.close()
-		handleMessage(data)
+	def parseSymbols(self, byte):
+		symbols = []
+		for i in range(4):
+			symbols.append((byte >> i*2) & 0x3)
+		return symbols
 
+	def addSymbolToCode(self, timing):
+		code = ""
+		if timing["duration"]:
+			code = "play 80, release: " + str(timing["duration"]) + ";"
+		code += "sleep " + str(timing["sleep"]) + ";"
+		return code
