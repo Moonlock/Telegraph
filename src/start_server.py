@@ -17,5 +17,6 @@ if not config.sections():
 
 serverConfig = config['Server']
 port = serverConfig['Port']
+wpm = serverConfig['WPM']
 
-server.run(port)
+server.run(port, wpm)

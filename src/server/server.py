@@ -5,19 +5,16 @@ import socket
 import sys
 
 
-TIME_UNIT = 0.1
-
-SYMBOL_TIMINGS = {
-	Symbol.DIT: {"duration": TIME_UNIT, "sleep": 2*TIME_UNIT},
-	Symbol.DAH: {"duration": 3*TIME_UNIT, "sleep": 4*TIME_UNIT},
-	Symbol.CHAR_SPACE: {"duration": 0, "sleep": 3*TIME_UNIT},
-	Symbol.WORD_SPACE: {"duration": 0, "sleep": 7*TIME_UNIT},
-}
+COUNTS_PER_WORD = 50
+MS_PER_MINUTE = 60000
 
 class Server:
 
-	def __init__(self, port):
+	def __init__(self, port, wpm):
 		signal.signal(signal.SIGINT, self.handleSigInt)
+
+		timeUnit = MS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
+		self.symbolTimings = self.createTimings(timeUnit)
 
 		try:
 			self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -35,6 +32,14 @@ class Server:
 			conn.close()
 			self.handleMessage(data)
 
+	def createTimings(self, timeUnit):
+		return {
+			Symbol.DIT: {"duration": timeUnit, "sleep": 2*timeUnit},
+			Symbol.DAH: {"duration": 3*timeUnit, "sleep": 4*timeUnit},
+			Symbol.CHAR_SPACE: {"duration": 0, "sleep": 3*timeUnit},
+			Symbol.WORD_SPACE: {"duration": 0, "sleep": 7*timeUnit},
+		}
+
 	def handleSigInt(self, sig, frame):
 		print("Shutting down server.")
 		self.sock.close()
@@ -46,7 +51,7 @@ class Server:
 			symbols = self.parseSymbols(byte)
 			while symbols:
 				symbol = symbols.pop()
-				sonicPiCode = self.addSymbolToCode(SYMBOL_TIMINGS[symbol])
+				sonicPiCode = self.addSymbolToCode(self.symbolTimings[symbol])
 		call(["sonic_pi", sonicPiCode])
 
 	def parseSymbols(self, byte):

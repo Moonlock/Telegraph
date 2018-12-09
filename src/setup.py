@@ -11,9 +11,10 @@ def main():
 
 	serverConfig = {}
 	clientConfig = {}
-	serverConfig['Port'] = input('Port to listen on [8000]: ') or 8000
-	clientConfig['Address'] = input('Server IP address/hostname: ')
-	clientConfig['Port'] = input('Server port [8000]: ') or 8000
+	serverConfig['WPM'] = input('WPM playback speed [20]: ') or 20
+	serverConfig['Port'] = input('Local port [8000]: ') or 8000
+	clientConfig['Address'] = input('Remote IP address/hostname: ')
+	clientConfig['Port'] = input('Remote port [8000]: ') or 8000
 
 	config = configparser.ConfigParser()
 	config['Server'] = serverConfig
