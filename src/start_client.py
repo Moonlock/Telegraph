@@ -12,6 +12,8 @@ if not config.sections():
 	if response.lower() == 'y':
 		setup.main()
 		config.read('config.ini')
+		if not config.sections():
+			exit()
 	else:
 		exit()
 
