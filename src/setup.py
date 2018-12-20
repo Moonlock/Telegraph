@@ -19,9 +19,12 @@ def main():
 	config = configparser.ConfigParser()
 	config['Server'] = serverConfig
 	config['Client'] = clientConfig
-	with open('config.ini', 'w') as configFile:
-		config.write(configFile)
-		print('Setup complete.')
+	try:
+		with open('config.ini', 'w') as configFile:
+			config.write(configFile)
+			print('Setup complete.')
+	except IOError:
+		print("Failed to create configuration file.")
 
 if __name__ == '__main__':
 	main()

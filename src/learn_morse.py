@@ -12,16 +12,16 @@ def createNewUser():
 	username = input("Username: ")
 
 	userConfig = {}
-	userConfig["Number of characters"] = input('Initial number of characters [2]: ') or 2
+	userConfig["Characters"] = input('Initial number of characters [2]: ') or 2
 	userConfig["Character WPM"] = input('Character WPM speed [20]: ') or 20
 	userConfig["Overall WPM"] = input('Overall WPM with Farnsworth timing [10]: ') or 10
-	userConfig["Test time"] = input('Test time in seconds [300]: ') or 300
+	userConfig["Time"] = input('Test time in seconds [300]: ') or 300
 
 	config[username] = userConfig
 	try:
 		with open('users.ini', 'w') as configFile:
 			config.write(configFile)
-	except:
+	except IOError:
 		error("Failed to update users file.")
 
 	return userConfig
@@ -51,7 +51,7 @@ else:
 
 charWpm = int(userConfig["Character WPM"])
 overallWpm = int(userConfig["Overall WPM"])
-numChars = int(userConfig["Number of characters"])
-testTime = int(userConfig["Test time"])
+numChars = int(userConfig["Characters"])
+testTime = int(userConfig["Time"])
 
 learnMorse.morseTest(charWpm, overallWpm, numChars, testTime)
