@@ -64,7 +64,7 @@ class morseTest:
 		print(" > ", end="")
 		sys.stdout.flush()
 
-		while self.running > 0:
+		while self.running:
 			wordLength = random.choice(range(10)) + 1
 			for x in range(wordLength):
 				char = random.choice(self.chars)
