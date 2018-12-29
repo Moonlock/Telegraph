@@ -16,10 +16,11 @@ def createNewUser():
 	userConfig["Character WPM"] = input('Character WPM speed [20]: ') or 20
 	userConfig["Overall WPM"] = input('Overall WPM with Farnsworth timing [10]: ') or 10
 	userConfig["Time"] = input('Test time in seconds [300]: ') or 300
+	print("")
 
 	config[username] = userConfig
 	try:
-		with open('users.ini', 'w') as configFile:
+		with open('learnMorse/users.ini', 'w') as configFile:
 			config.write(configFile)
 	except IOError:
 		error("Failed to update users file.")
@@ -28,7 +29,7 @@ def createNewUser():
 
 
 config = configparser.ConfigParser()
-config.read("users.ini")
+config.read("learnMorse/users.ini")
 sections = config.sections()
 i=0
 print("")
