@@ -2,6 +2,7 @@ import difflib
 import random
 import subprocess
 import sys
+import signal
 
 from learnMorse.alphabet import morse
 from symbols import Symbol
@@ -15,11 +16,14 @@ MS_PER_MINUTE = 60000
 class morseTest:
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime):
+		signal.signal(signal.SIGINT, self.handleSigInt)
 
 		self.masterList = []
 		self.charWpm = charWpm
 		self.overallWpm = overallWpm
 		self.msPerCount = MS_PER_MINUTE / (COUNTS_PER_WORD * self.charWpm)
+		self.ditFile = "dot-20wpm.ogg" if charWpm == 20 else "dot-15wpm.ogg"
+		self.dahFile = "dash-20wpm.ogg" if charWpm == 20 else "dash-15wpm.ogg"
 
 		# Equations from http://www.arrl.org/files/file/Technology/x9004008.pdf
 		totalDelay = (60*self.charWpm - 37.2*self.overallWpm) / \
@@ -34,16 +38,20 @@ class morseTest:
 
 		sleep(2)
 		self.running = True
-		timer = Timer(testTime, self.stopTest)
-		timer.start()
+		self.timer = Timer(testTime, self.stopTest)
+		self.timer.start()
 		self.startTest()
 
+	def handleSigInt(self, sig, frame):
+		self.timer.cancel()
+		exit()
+
 	def playDit(self):
-		subprocess.call(["paplay", "learnMorse/sounds/dot-20wpm.ogg"])
+		subprocess.call(["paplay", "learnMorse/sounds/" + self.ditFile])
 		sleep(self.symbolSpace)
 
 	def playDah(self):
-		subprocess.call(["paplay", "learnMorse/sounds/dash-20wpm.ogg"])
+		subprocess.call(["paplay", "learnMorse/sounds/" + self.dahFile])
 		sleep(self.symbolSpace)
 
 	def playCharSpace(self):
