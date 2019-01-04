@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 from client import client
+from server import server
 import configparser
 import setup
 
@@ -19,6 +20,14 @@ if not config.sections():
 
 clientConfig = config['Client']
 server = clientConfig['Address']
-port = clientConfig['Port']
+clientPort = clientConfig['Port']
 
-client = client.Client(server, port)
+client = Thread(target=client.Client, args=(server, clientPort))
+client.start()
+
+serverConfig = config['Server']
+serverPort = serverConfig['Port']
+wpm = int(serverConfig['WPM'])
+
+server = Thread(target=server.Server, args=(serverPort, wpm))
+server.start()
