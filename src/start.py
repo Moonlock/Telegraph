@@ -4,6 +4,8 @@ from client import client
 from server import server
 import configparser
 import setup
+import signal
+from threading import Thread, Event
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -18,16 +20,25 @@ if not config.sections():
 	else:
 		exit()
 
+killed = Event()
+
 clientConfig = config['Client']
-server = clientConfig['Address']
+serverAddress = clientConfig['Address']
 clientPort = clientConfig['Port']
 
-client = Thread(target=client.Client, args=(server, clientPort))
-client.start()
+clientThread = Thread(target=client.Client, args=(serverAddress, clientPort, killed))
+clientThread.start()
 
 serverConfig = config['Server']
 serverPort = serverConfig['Port']
 wpm = int(serverConfig['WPM'])
 
-server = Thread(target=server.Server, args=(serverPort, wpm))
-server.start()
+serverThread = Thread(target=server.Server, args=(serverPort, wpm, killed))
+serverThread.start()
+
+def handleSigInt(sig, frame):
+	killed.set()
+	clientThread.join()
+	serverThread.join()
+
+signal.signal(signal.SIGINT, handleSigInt)

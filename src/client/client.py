@@ -5,6 +5,7 @@ import sys
 from math import ceil
 from RPi import GPIO
 from time import time, sleep
+from threading import Timer, Thread
 
 from symbols import Symbol
 
@@ -16,9 +17,7 @@ END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
 
-	def __init__(self, serv, servPort):
-		signal.signal(signal.SIGINT, self.handleSigInt)
-
+	def __init__(self, serv, servPort, killed):
 		self.server = serv
 		self.port = servPort
 
@@ -30,12 +29,9 @@ class Client:
 
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(CHANNEL, GPIO.IN)
-		resetCallbacks(self.initCallback)
+		self.resetCallbacks(self.initCallback)
 
-		signal.pause()
-
-	def handleSigInt(self, sig, frame):
-		GPIO.cleanup()
+		killed.wait()
 
 	def debug(self, message):
 		if DEBUG:
@@ -139,11 +135,11 @@ class Client:
 		if self.message[-5:] == END_MESSAGE:
 			self.debug("Sending message.")
 			self.sendMessage()
-			self.resetCallbacks(initCallback)
+			self.resetCallbacks(self.initCallback)
 
 	def sendMessage(self):
 		self.connectToServer()
-		self.sendToServer(createMessage())
+		self.sendToServer(self.createMessage())
 		self.s.close()
 
 	def sendToServer(self, message):
