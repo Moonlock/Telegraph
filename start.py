@@ -1,24 +1,21 @@
 #! /usr/bin/python3
 
-from client import client
-from server import server
+from src.telegraph import client
+from src.telegraph import server
 import configparser
 import setup
 import signal
+import sys
 from threading import Thread, Event
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(setup.CONFIG_FILE)
 if not config.sections():
-	print('Config file not found.')
-	response = input('Run setup script? [y/N]: ' or 'n')
-	if response.lower() == 'y':
-		setup.main()
-		config.read('config.ini')
-		if not config.sections():
-			exit()
-	else:
-		exit()
+	print('Running setup script.')
+	setup.main()
+	config.read('config.ini')
+	if not config.sections():
+		sys.exit()
 
 killed = Event()
 

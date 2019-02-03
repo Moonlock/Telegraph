@@ -4,8 +4,8 @@ import subprocess
 import sys
 import signal
 
-from learnMorse.alphabet import morse
-from symbols import Symbol
+from src.learnMorse.alphabet import morse
+from src.symbols import Symbol
 from threading import Timer
 from time import sleep
 
@@ -44,14 +44,14 @@ class morseTest:
 
 	def handleSigInt(self, sig, frame):
 		self.timer.cancel()
-		exit()
+		sys.exit()
 
 	def playDit(self):
-		subprocess.call(["paplay", "learnMorse/sounds/" + self.ditFile])
+		subprocess.call(["paplay", "resources/sounds/" + self.ditFile])
 		sleep(self.symbolSpace)
 
 	def playDah(self):
-		subprocess.call(["paplay", "learnMorse/sounds/" + self.dahFile])
+		subprocess.call(["paplay", "resources/sounds/" + self.dahFile])
 		sleep(self.symbolSpace)
 
 	def playCharSpace(self):

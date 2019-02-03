@@ -1,4 +1,4 @@
-from symbols import Symbol as s
+from src.symbols import Symbol as s
 from collections import OrderedDict
 
 morse = OrderedDict()

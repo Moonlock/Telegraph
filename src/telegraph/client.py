@@ -7,7 +7,7 @@ from RPi import GPIO
 from time import time, sleep
 from threading import Timer, Thread
 
-from symbols import Symbol
+from src.symbols import Symbol
 
 DEBUG = False
 

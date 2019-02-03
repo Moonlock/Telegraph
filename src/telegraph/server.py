@@ -1,4 +1,4 @@
-from symbols import Symbol
+from src.symbols import Symbol
 from subprocess import call
 from threading import Timer
 import select

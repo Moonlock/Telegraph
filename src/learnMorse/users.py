@@ -1,9 +1,13 @@
 #! /usr/bin/python3
+
 import configparser
+import sys
+
+USERS_FILE = 'src/learnMorse/users.ini'
 
 def error(message):
 	print(message)
-	exit()
+	sys.exit()
 
 def createNewUser(config):
 	print("Creating new user.")
@@ -18,7 +22,7 @@ def createNewUser(config):
 
 	config[username] = userConfig
 	try:
-		with open('learnMorse/users.ini', 'w') as configFile:
+		with open(USERS_FILE, 'w') as configFile:
 			config.write(configFile)
 	except IOError:
 		error("Failed to update users file.")
@@ -27,7 +31,7 @@ def createNewUser(config):
 
 def getUserData():
 	config = configparser.ConfigParser()
-	config.read("learnMorse/users.ini")
+	config.read(USERS_FILE)
 	sections = config.sections()
 	i=0
 	print()
@@ -39,7 +43,7 @@ def getUserData():
 	print()
 	selection = input(" > ")
 
-	if selection == 'N':
+	if selection.upper() == 'N':
 		return createNewUser(config)
 
 	try:

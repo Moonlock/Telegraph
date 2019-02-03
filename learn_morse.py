@@ -1,10 +1,12 @@
 #! /usr/bin/python3
-from learnMorse import learnMorse, users
+
+from src.learnMorse import learnMorse, users
+import sys
 
 try:
 	userConfig = users.getUserData()
 except KeyboardInterrupt:
-	exit()
+	sys.exit()
 
 charWpm = int(userConfig["Character WPM"])
 overallWpm = int(userConfig["Overall WPM"])
