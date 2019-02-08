@@ -4,7 +4,7 @@ from src.learnMorse import learnMorse, users
 import sys
 
 try:
-	userConfig = users.getUserData()
+	(user, userConfig) = users.getUserData()
 except KeyboardInterrupt:
 	sys.exit()
 
@@ -13,4 +13,4 @@ overallWpm = int(userConfig["Overall WPM"])
 numChars = int(userConfig["Characters"])
 testTime = int(userConfig["Time"])
 
-test = learnMorse.morseTest(charWpm, overallWpm, numChars, testTime)
+learnMorse.morseTest(charWpm, overallWpm, numChars, testTime, user)

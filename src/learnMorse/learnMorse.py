@@ -5,6 +5,7 @@ import sys
 import signal
 
 from src.learnMorse.alphabet import morse
+from src.learnMorse import users
 from src.symbols import Symbol
 from threading import Timer
 from time import sleep
@@ -15,7 +16,7 @@ MS_PER_MINUTE = 60000
 
 class morseTest:
 
-	def __init__(self, charWpm, overallWpm, numChars, testTime):
+	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
 		signal.signal(signal.SIGINT, self.handleSigInt)
 
 		self.masterList = []
@@ -24,6 +25,7 @@ class morseTest:
 		self.msPerCount = MS_PER_MINUTE / (COUNTS_PER_WORD * self.charWpm)
 		self.ditFile = "dot-20wpm.ogg" if charWpm == 20 else "dot-15wpm.ogg"
 		self.dahFile = "dash-20wpm.ogg" if charWpm == 20 else "dash-15wpm.ogg"
+		self.user = user
 
 		# Equations from http://www.arrl.org/files/file/Technology/x9004008.pdf
 		totalDelay = (60*self.charWpm - 37.2*self.overallWpm) / \
@@ -93,7 +95,10 @@ class morseTest:
 	def checkAnswer(self, response, master):
 		diff = difflib.SequenceMatcher(None, master, response, autojunk=False)
 		score = diff.ratio()
-		print(score)
+		print()
+		print("Score: " + str(score) + "%")
+		if score >= 0.95:
+			users.increaseCharacters()
 
 	def stopTest(self):
 		self.running = False
