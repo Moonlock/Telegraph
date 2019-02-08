@@ -13,7 +13,7 @@ config.read(setup.CONFIG_FILE)
 if not config.sections():
 	print('Running setup script.')
 	setup.main()
-	config.read('config.ini')
+	config.read(setup.CONFIG_FILE)
 	if not config.sections():
 		sys.exit()
 
