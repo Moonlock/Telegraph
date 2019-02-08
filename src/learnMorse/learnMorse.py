@@ -75,7 +75,7 @@ class morseTest:
 		sys.stdout.flush()
 
 		while self.running:
-			wordLength = random.choice(range(10)) + 1
+			wordLength = random.choice(range(8)) + 1
 			for x in range(wordLength):
 				char = random.choice(self.chars)
 				self.masterList.append(char[0])
@@ -94,11 +94,11 @@ class morseTest:
 
 	def checkAnswer(self, response, master):
 		diff = difflib.SequenceMatcher(None, master, response, autojunk=False)
-		score = diff.ratio()
+		score = diff.ratio() * 100
 		print()
 		print("Score: " + str(score) + "%")
-		if score >= 0.95:
-			users.increaseCharacters()
+		if score >= 95:
+			users.increaseCharacters(self.user)
 
 	def stopTest(self):
 		self.running = False

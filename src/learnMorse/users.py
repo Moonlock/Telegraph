@@ -30,21 +30,21 @@ def createNewUser(config):
 	return (username, userConfig)
 
 def increaseCharacters(user):
-	print("Increasing number of characters.")
-
 	config = configparser.ConfigParser()
-	config.read("learnMorse/users.ini")
+	config.read(USERS_FILE)
 	if not config.has_section(user):
-		error("User " + user + " does not exist.")
+		error("Failed to update user file: User " + user + " does not exist.")
 
 	numChars = config.getint(user, "Characters")
-	if(numchars == 36):
+	if(numChars == 36):
 		print("Number of Characters is already at maximum.")
 		return
-	config[user]["Characters"] = str(numChars + 1)
+	numChars += 1
 
+	print("Increasing number of characters.")
+	config[user]["Characters"] = str(numChars)
 	try:
-		with open('learnMorse/users.ini', 'w') as configFile:
+		with open(USERS_FILE, 'w') as configFile:
 			config.write(configFile)
 	except IOError:
 		error("Failed to update users file.")
