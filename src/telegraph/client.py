@@ -1,11 +1,9 @@
-import signal
 import socket
 import sys
 
 from math import ceil
 from RPi import GPIO
 from time import time, sleep
-from threading import Timer, Thread
 
 from src.symbols import Symbol
 

@@ -1,8 +1,5 @@
 from src.symbols import Symbol
 from subprocess import call
-from threading import Timer
-import select
-import signal
 import socket
 import sys
 
