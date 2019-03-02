@@ -49,6 +49,8 @@ class Server:
 			except socket.timeout:
 				continue
 			
+		GPIO.cleanup()
+			
 	def debug(self, message):
 		if DEBUG:
 			print(message)

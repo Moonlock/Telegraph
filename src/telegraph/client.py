@@ -30,6 +30,7 @@ class Client:
 		self.resetCallbacks(self.initCallback)
 
 		killed.wait()
+		GPIO.cleanup()
 
 	def debug(self, message):
 		if DEBUG:
