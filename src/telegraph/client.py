@@ -7,7 +7,7 @@ from time import time, sleep
 
 from src.symbols import Symbol
 
-DEBUG = False
+DEBUG = True
 
 CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
@@ -26,11 +26,10 @@ class Client:
 		self.timeUnit = 0
 
 		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(CHANNEL, GPIO.IN)
+		GPIO.setup(CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 		self.resetCallbacks(self.initCallback)
 
 		killed.wait()
-		GPIO.cleanup()
 
 	def debug(self, message):
 		if DEBUG:

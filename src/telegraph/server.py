@@ -3,10 +3,11 @@ from src.symbols import Symbol
 from collections import deque
 from RPi import GPIO
 from subprocess import call
+from time import sleep
 import socket
 import sys
 
-DEBUG = False
+DEBUG = True
 
 LED_CHANNEL = 16
 BUTTON1_CHANNEL = 20
@@ -23,11 +24,13 @@ class Server:
 		self.symbolTimings = self.createTimings(timeUnit)
 		
 		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(LED_CHANNEL, GPIO.OUT)
-		GPIO.setup(BUTTON1_CHANNEL, GPIO.IN)
-		GPIO.setup(BUTTON2_CHANNEL, GPIO.IN)
-		GPIO.add_event_detect(BUTTON1_CHANNEL, GPIO.RISING, callback=self.playMessage, bouncetime=50)
-		GPIO.add_event_detect(BUTTON2_CHANNEL, GPIO.RISING, callback=self.deleteMessage, bouncetime=50)
+		GPIO.setup(LED_CHANNEL, GPIO.OUT, initial=False)
+		GPIO.setup(BUTTON1_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+		GPIO.setup(BUTTON2_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+		
+		# Can probably lower the bouncetime when I get a decent button.
+		GPIO.add_event_detect(BUTTON1_CHANNEL, GPIO.RISING, callback=self.playMessage, bouncetime=1000)
+		GPIO.add_event_detect(BUTTON2_CHANNEL, GPIO.RISING, callback=self.deleteMessage, bouncetime=1000)
 		
 		socket.setdefaulttimeout(1)
 		try:
@@ -48,8 +51,6 @@ class Server:
 				self.handleMessage(data)
 			except socket.timeout:
 				continue
-			
-		GPIO.cleanup()
 			
 	def debug(self, message):
 		if DEBUG:
@@ -89,14 +90,17 @@ class Server:
 		code += "sleep " + str(timing["sleep"]) + ";"
 		return code
 	
-	def playMessage(self):
+	def playMessage(self, channel):
 		self.debug("Play message.")
-		call(["sonic_pi", self.messages[0]])
-
-	def deleteMessage(self):
-		self.debug("delete message.")
+		#~ sleep(0.040)
 		if self.messages:
-			self.messages.pop()
+			call(["sonic_pi", self.messages[0]])
+
+	def deleteMessage(self, channel):
+		self.debug("delete message.")
+		#~ sleep(0.040)
+		if self.messages:
+			self.messages.popleft()
 
 			if not self.messages:
 				GPIO.output(LED_CHANNEL, GPIO.LOW)

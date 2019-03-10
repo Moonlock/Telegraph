@@ -6,6 +6,7 @@ import configparser
 import setup
 import signal
 import sys
+from RPi import GPIO
 from threading import Thread, Event
 
 config = configparser.ConfigParser()
@@ -37,5 +38,6 @@ def handleSigInt(sig, frame):
 	killed.set()
 	clientThread.join()
 	serverThread.join()
+	GPIO.cleanup()
 
 signal.signal(signal.SIGINT, handleSigInt)
