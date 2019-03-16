@@ -7,7 +7,7 @@ from time import time, sleep
 
 from src.symbols import Symbol
 
-DEBUG = True
+DEBUG = False
 
 CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15

@@ -7,7 +7,7 @@ from time import sleep
 import socket
 import sys
 
-DEBUG = True
+DEBUG = False
 
 LED_CHANNEL = 16
 BUTTON1_CHANNEL = 20
