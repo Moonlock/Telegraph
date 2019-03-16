@@ -7,8 +7,6 @@ from time import sleep
 import socket
 import sys
 
-DEBUG = False
-
 LED_CHANNEL = 16
 BUTTON1_CHANNEL = 20
 BUTTON2_CHANNEL = 21
@@ -17,7 +15,8 @@ SECONDS_PER_MINUTE = 60
 
 class Server:
 
-	def __init__(self, port, wpm, killed):
+	def __init__(self, port, wpm, killed, debug):
+		self.debug = debug
 		self.messages = deque()
 		
 		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
@@ -53,7 +52,7 @@ class Server:
 				continue
 			
 	def debug(self, message):
-		if DEBUG:
+		if self.debug:
 			print(message)
 
 	def createTimings(self, timeUnit):

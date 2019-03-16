@@ -20,18 +20,21 @@ if not config.sections():
 
 killed = Event()
 
+commonConfig = config['Common']
+debug = commonConfig['Debug']
+
 clientConfig = config['Client']
 serverAddress = clientConfig['Address']
 clientPort = clientConfig['Port']
 
-clientThread = Thread(target=client.Client, args=(serverAddress, clientPort, killed))
+clientThread = Thread(target=client.Client, args=(serverAddress, clientPort, killed, debug))
 clientThread.start()
 
 serverConfig = config['Server']
 serverPort = serverConfig['Port']
 wpm = int(serverConfig['WPM'])
 
-serverThread = Thread(target=server.Server, args=(serverPort, wpm, killed))
+serverThread = Thread(target=server.Server, args=(serverPort, wpm, killed, debug))
 serverThread.start()
 
 def handleSigInt(sig, frame):

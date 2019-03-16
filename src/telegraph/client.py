@@ -7,15 +7,15 @@ from time import time, sleep
 
 from src.symbols import Symbol
 
-DEBUG = False
-
 CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
 END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
 
-	def __init__(self, serv, servPort, killed):
+	def __init__(self, serv, servPort, killed, debug):
+		self.debug = debug
+		
 		self.server = serv
 		self.port = servPort
 
@@ -32,7 +32,7 @@ class Client:
 		killed.wait()
 
 	def debug(self, message):
-		if DEBUG:
+		if self.debug:
 			print(message)
 
 	def timePress(self):
