@@ -3,7 +3,6 @@ from src.symbols import Symbol
 from collections import deque
 from RPi import GPIO
 from subprocess import call
-from time import sleep
 import socket
 import sys
 
@@ -91,13 +90,11 @@ class Server:
 	
 	def playMessage(self, channel):
 		self.debug("Play message.")
-		#~ sleep(0.040)
 		if self.messages:
 			call(["sonic_pi", self.messages[0]])
 
 	def deleteMessage(self, channel):
 		self.debug("delete message.")
-		#~ sleep(0.040)
 		if self.messages:
 			self.messages.popleft()
 
