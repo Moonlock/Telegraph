@@ -22,7 +22,7 @@ def main():
 		clientConfig['Port'] = input('Remote port [8000]: ') or 8000
 		debug = input('Enable debug info [y/N]: ') or 'n'
 		commonConfig['Debug'] = debug.lower() == 'y'
-			
+
 	except KeyboardInterrupt:
 		sys.exit()
 

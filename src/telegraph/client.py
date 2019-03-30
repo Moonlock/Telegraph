@@ -15,7 +15,7 @@ class Client:
 
 	def __init__(self, serv, servPort, killed, debug):
 		self.debug = debug
-		
+
 		self.server = serv
 		self.port = servPort
 
