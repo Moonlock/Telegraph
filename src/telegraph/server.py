@@ -15,7 +15,7 @@ SECONDS_PER_MINUTE = 60
 class Server:
 
 	def __init__(self, port, wpm, killed, debug):
-		self.debug = debug
+		self.dbgEnabled = debug
 		self.messages = deque()
 		
 		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
@@ -51,7 +51,7 @@ class Server:
 				continue
 			
 	def debug(self, message):
-		if self.debug:
+		if self.dbgEnabled:
 			print(message)
 
 	def createTimings(self, timeUnit):

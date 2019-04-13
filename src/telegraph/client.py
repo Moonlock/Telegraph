@@ -14,7 +14,7 @@ END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 class Client:
 
 	def __init__(self, serv, servPort, killed, debug):
-		self.debug = debug
+		self.dbgEnabled = debug
 
 		self.server = serv
 		self.port = servPort
@@ -32,7 +32,7 @@ class Client:
 		killed.wait()
 
 	def debug(self, message):
-		if self.debug:
+		if self.dbgEnabled:
 			print(message)
 
 	def timePress(self):
