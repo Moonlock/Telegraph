@@ -38,9 +38,10 @@ class morseTest:
 		for x in range(numChars):
 			self.chars.append(morse.popitem(0))
 
+		self.timer = Timer(testTime, self.stopTest)
+
 		sleep(2)
 		self.running = True
-		self.timer = Timer(testTime, self.stopTest)
 		self.timer.start()
 		self.startTest()
 
