@@ -44,6 +44,7 @@ def main():
 		print("Failed to create configuration file.")
 
 	if multiDest:
+		print("")
 		print("Use `./configureContacts` to create contacts and groups.")
 
 if __name__ == '__main__':
