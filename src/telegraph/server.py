@@ -17,19 +17,19 @@ class Server:
 	def __init__(self, port, wpm, killed, debug):
 		self.dbgEnabled = debug
 		self.messages = deque()
-		
+
 		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
 		self.symbolTimings = self.createTimings(timeUnit)
-		
+
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(LED_CHANNEL, GPIO.OUT, initial=False)
 		GPIO.setup(BUTTON1_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 		GPIO.setup(BUTTON2_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-		
+
 		# Can probably lower the bouncetime when I get a decent button.
 		GPIO.add_event_detect(BUTTON1_CHANNEL, GPIO.RISING, callback=self.playMessage, bouncetime=1000)
 		GPIO.add_event_detect(BUTTON2_CHANNEL, GPIO.RISING, callback=self.deleteMessage, bouncetime=1000)
-		
+
 		socket.setdefaulttimeout(1)
 		try:
 			self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,10 +46,11 @@ class Server:
 				conn, addr = self.sock.accept()
 				data = conn.recv(1024)
 				conn.close()
+				self.debug("Received message from " + addr)
 				self.handleMessage(data)
 			except socket.timeout:
 				continue
-			
+
 	def debug(self, message):
 		if self.dbgEnabled:
 			print(message)
@@ -87,7 +88,7 @@ class Server:
 			code = "play 80, release: " + str(timing["duration"]) + ";"
 		code += "sleep " + str(timing["sleep"]) + ";"
 		return code
-	
+
 	def playMessage(self, channel):
 		self.debug("Play message.")
 		if self.messages:

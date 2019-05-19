@@ -1,3 +1,4 @@
+import configparser
 import socket
 import sys
 
@@ -6,6 +7,7 @@ from RPi import GPIO
 from time import time, sleep
 
 from src.symbols import Symbol
+import setup
 
 CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
@@ -13,17 +15,24 @@ END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
 
-	def __init__(self, serv, servPort, killed, debug):
+	def __init__(self, multiDest, serv, servPort, killed, debug):
 		self.dbgEnabled = debug
 
-		self.server = serv
-		self.port = servPort
+		self.multiDest = multiDest
+		self.waitingForDest = multiDest
+		if multiDest:
+			self.dests = None
+		else:
+			self.dests = (serv, servPort)
 
 		self.message = []
 		self.initTimings = []
 		self.lastPress = 0
 		self.lastRelease = 0
 		self.timeUnit = 0
+
+		self.destinations = configparser.ConfigParser()
+		self.destinations.read(setup.DEST_FILE)
 
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -78,13 +87,13 @@ class Client:
 		dahs = self.initTimings[1::4]
 		dits = self.initTimings[3::4]
 		spaces = self.initTimings[2::2]
-		self.initTimings.clear()
 
 		if min(dahs) < 2*max(dits + spaces):
-			self.debug("Init sequence incorrect.")
+			self.initTimings.pop(0)
 			return
 
 		self.timeUnit = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
+		self.initTimings.clear()
 		self.debug("Starting")
 		self.startMessage()
 
@@ -116,8 +125,13 @@ class Client:
 
 		if releaseTimeMs > 5*self.timeUnit:
 			self.message.append(Symbol.WORD_SPACE)
+			if self.waitingForDest:
+				self.dests = self.parseDestination()
+				return
+
 		elif releaseTimeMs >= 2*self.timeUnit:
 			self.message.append(Symbol.CHAR_SPACE)
+
 		self.checkFinish()
 
 	def handleRelease(self):
@@ -129,20 +143,68 @@ class Client:
 			self.message.append(Symbol.DAH)
 		self.checkFinish()
 
+	def parseDestination(self):
+		destBounds = [i for i, e in enumerate(self.message) if e == Symbol.WORD_SPACE]
+
+		if len(destBounds != 2):
+			self.callSignError("Error parsing call sign")
+			return
+
+		start = destBounds[0] + 1
+		end = destBounds[1]
+		sign = self.message[start : end]
+
+		dests = self.getDestsFromSign(sign)
+		if not dests:
+			self.callSignError("Call sign not found")
+			return
+
+		self.waitingForDest = False
+		return dests
+
+	def getDestsFromSign(self, sign):
+		signString = "".join([str(int(symbol)) for symbol in sign])
+		if not self.destinations.has_section(signString):
+			return None
+
+		config = self.destinations[signString]
+		dests = []
+		if config.getboolean("Group"):
+			memberList = []
+			for member in config["Members"]:
+				memberConfig = self.destinations[member]
+				memberList.append(memberConfig["Name"])
+				dests.append((memberConfig["Address"], memberConfig["Port"]))
+			self.debug("Sending to " + config["Name"] + ": " + ", ".join(memberList) + ".")
+		else:
+			self.debug("Sending to " + config["Name"] + ".")
+			dests.append((config["Address"], config["Port"]))
+
+		return dests
+
+	def callSignError(self, message):
+		self.debug(message + ": Canceling message.")
+		self.resetCallbacks(self.initCallback)
+
 	def checkFinish(self):
 		if self.message[-5:] == END_MESSAGE:
 			self.debug("Sending message.")
 			self.sendMessage()
+			if self.multiDest:
+				self.waitingForDest = True
+				self.dests = None
+
 			self.resetCallbacks(self.initCallback)
 
 	def sendMessage(self):
-		self.connectToServer()
-		self.sendToServer(self.createMessage())
-		self.s.close()
+		for dest in self.dests:
+			sock = self.connectToServer(dest[0], dest[1])
+			self.sendToServer(sock, self.createMessage())
+			sock.close()
 
-	def sendToServer(self, message):
+	def sendToServer(self, sock, message):
 		try:
-			self.s.sendall(message)
+			sock.sendall(message)
 		except socket.error as e:
 			print("Failed to send message.  {}: {}".format(e.errno, e.strerror))
 			sys.exit()
@@ -159,11 +221,12 @@ class Client:
 		GPIO.remove_event_detect(CHANNEL)
 		GPIO.add_event_detect(CHANNEL, GPIO.BOTH, callback=callback, bouncetime=50)
 
-	def connectToServer(self):
+	def connectToServer(self, server, port):
 		try:
-			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.s.connect((self.server, int(self.port)))
+			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			sock.connect((server, int(port)))
+			return sock
 		except socket.error as e:
 			print("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
 			sys.exit()

@@ -24,17 +24,22 @@ commonConfig = config['Common']
 debug = commonConfig['Debug']
 
 clientConfig = config['Client']
-serverAddress = clientConfig['Address']
-clientPort = clientConfig['Port']
+multiDest = clientConfig['Multiple Destinations']
+if multiDest:
+	serverAddress = None
+	serverPort = None
+else:
+	serverAddress = clientConfig['Address']
+	serverPort = clientConfig['Port']
 
-clientThread = Thread(target=client.Client, args=(serverAddress, clientPort, killed, debug))
+clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, killed, debug))
 clientThread.start()
 
 serverConfig = config['Server']
-serverPort = serverConfig['Port']
+listenPort = serverConfig['Port']
 wpm = int(serverConfig['WPM'])
 
-serverThread = Thread(target=server.Server, args=(serverPort, wpm, killed, debug))
+serverThread = Thread(target=server.Server, args=(listenPort, wpm, killed, debug))
 serverThread.start()
 
 def handleSigInt(sig, frame):
