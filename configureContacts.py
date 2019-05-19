@@ -1,7 +1,10 @@
 #! /usr/bin/python3
 
+from src.learnMorse.alphabet import morse
+from src.symbols import Symbol
 import setup
 
+from math import ceil
 import configparser
 import sys
 
@@ -42,14 +45,14 @@ def mainloop():
 	if selection.upper() == 'C':
 		print("Creating new contact.")
 		contactConfig = createNewContact()
-		_destinations[contactConfig["Sign"]] = contactConfig
+		_destinations[contactConfig["Code"]] = contactConfig
 		updatedestinations()
 		return
 
 	if selection.upper() == 'G':
 		print("Creating new group.")
 		groupConfig = createNewGroup()
-		_destinations[groupConfig["Sign"]] = groupConfig
+		_destinations[groupConfig["Code"]] = groupConfig
 		updatedestinations()
 		return
 
@@ -115,7 +118,9 @@ def createNewContact(userData=None):
 
 	contactConfig = {}
 	contactConfig["Name"] = getInput("Name", "Name")
-	contactConfig["Sign"] = getInput("Sign", "Call sign").upper()
+	sign = getInput("Sign", "Call sign").upper()
+	contactConfig["Sign"] = sign
+	contactConfig["Code"] = toMorse(sign)
 	contactConfig["Address"] = getInput("Address", "IP Address")
 	contactConfig["Port"] = getInput("Port", "Port")
 	contactConfig["Group"] = False
@@ -123,17 +128,26 @@ def createNewContact(userData=None):
 
 	return contactConfig
 
+def toMorse(sign):
+	signMorse = []
+	for char in sign:
+		signMorse.extend(morse[char])
+		signMorse.append(Symbol.CHAR_SPACE)
+	return "".join([str(int(m)) for m in signMorse])
+
 def editContact(userData):
 	print("Editing contact " + userData['Name'] + ".")
 	contactConfig = createNewContact(userData)
-	_destinations.remove_section(userData['Sign'])
-	_destinations[contactConfig["Sign"]] = contactConfig
+	_destinations.remove_section(userData['Code'])
+	_destinations[contactConfig["Code"]] = contactConfig
 	updatedestinations()
 
 def createNewGroup():
 	groupConfig = {}
 	groupConfig["Name"] = input("Group name: ")
-	groupConfig["Sign"] = input("Call sign: ").upper()
+	sign = input("Call sign: ").upper()
+	groupConfig["Sign"] = sign
+	groupConfig["Code"] = toMorse(sign)
 	groupConfig["Members"] = getMembers()
 	groupConfig["Group"] = True
 	print("")
@@ -144,12 +158,14 @@ def editGroup(groupData):
 	print("Editing group " + groupData['Name'] + ".")
 	newGroup = {}
 	newGroup["Name"] = input("Group name [" + groupData["Name"] + "]: ") or groupData["Name"]
-	newGroup["Sign"] = input("Call sign [" + groupData["Sign"] + "]: ") or groupData["Sign"]
+	sign = input("Call sign [" + groupData["Sign"] + "]: ") or groupData["Sign"]
+	newGroup["Sign"] = sign
+	newGroup["Code"] = toMorse(sign)
 	newGroup["Members"] = getMembers(groupData["Members"]) or groupData["Members"]
 	newGroup["Group"] = True
 
-	_destinations.remove_section(groupData["Sign"])
-	_destinations[newGroup["Sign"]] = newGroup
+	_destinations.remove_section(groupData["Code"])
+	_destinations[newGroup["Code"]] = newGroup
 	updatedestinations()
 
 def getMembers(oldList=None):
@@ -161,7 +177,7 @@ def getMembers(oldList=None):
 	print()
 	for contact in contacts:
 		userData = _destinations[contact]
-		print("    " + contact + ": " + userData["Name"])
+		print("    " + userData["Sign"] + ": " + userData["Name"])
 	print()
 
 	print("Enter call signs of members, separated by spaces:")
@@ -170,10 +186,11 @@ def getMembers(oldList=None):
 	members = input(" > ")
 	memberList = []
 	for member in [m.upper() for m in members.split()]:
-		if not member in _destinations.sections():
+		code = str(toMorse(member))
+		if not code in _destinations.sections():
 			print("Error: " + member + " is not in contacts list; not adding to group.")
 		else:
-			memberList.append(member)
+			memberList.append(code)
 	return ",".join(memberList)
 
 def deleteContact(idToConfigMap):
@@ -183,7 +200,7 @@ def deleteContact(idToConfigMap):
 
 	config = getConfigFromSelection(selection, idToConfigMap)
 	print("Deleting contact " + config['Name'] + ".")
-	_destinations.remove_section(config["Sign"])
+	_destinations.remove_section(config["Code"])
 	updatedestinations()
 
 def getConfigFromSelection(selection, idToConfigMap):

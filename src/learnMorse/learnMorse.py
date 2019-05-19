@@ -91,7 +91,7 @@ class morseTest:
 		response = input()
 		master = "".join(self.masterList)
 		print("   " + master)
-		self.checkAnswer(response.lower(), master)
+		self.checkAnswer(response.upper(), master)
 
 	def checkAnswer(self, response, master):
 		diff = difflib.SequenceMatcher(None, master, response, autojunk=False)
