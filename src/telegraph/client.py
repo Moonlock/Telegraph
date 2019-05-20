@@ -23,7 +23,7 @@ class Client:
 		if multiDest:
 			self.dests = None
 		else:
-			self.dests = (serv, servPort)
+			self.dests = [(serv, servPort)]
 
 		self.message = []
 		self.initTimings = []
@@ -138,7 +138,7 @@ class Client:
 	def parseDestination(self):
 		destBounds = [i for i, e in enumerate(self.message) if e == Symbol.WORD_SPACE]
 
-		if len(destBounds != 2):
+		if len(destBounds) != 2:
 			self.callSignError("Error parsing call sign")
 			return
 

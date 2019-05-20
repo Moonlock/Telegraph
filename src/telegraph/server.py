@@ -46,7 +46,7 @@ class Server:
 				conn, addr = self.sock.accept()
 				data = conn.recv(1024)
 				conn.close()
-				self.debug("Received message from " + addr)
+				self.debug("Received message from " + str(addr))
 				self.handleMessage(data)
 			except socket.timeout:
 				continue

@@ -21,10 +21,10 @@ if not config.sections():
 killed = Event()
 
 commonConfig = config['Common']
-debug = commonConfig['Debug']
+debug = commonConfig.getboolean('Debug')
 
 clientConfig = config['Client']
-multiDest = clientConfig['Multiple Destinations']
+multiDest = clientConfig.getboolean('Multiple Destinations')
 if multiDest:
 	serverAddress = None
 	serverPort = None

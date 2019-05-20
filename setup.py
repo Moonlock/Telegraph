@@ -22,7 +22,8 @@ def main():
 		serverConfig['Port'] = input('Local port [8000]: ') or 8000
 
 		multiDest = input('Enable multiple destinations [y/N]: ') or 'n'
-		clientConfig['Multiple Destinations'] = multiDest.lower() == 'y'
+		multiDest = multiDest.lower() == 'y'
+		clientConfig['Multiple Destinations'] = multiDest
 		if not multiDest:
 			clientConfig['Address'] = input('Remote IP address/hostname [localhost]: ') or 'localhost'
 			clientConfig['Port'] = input('Remote port [8000]: ') or 8000
