@@ -7,8 +7,8 @@ import socket
 import sys
 
 LED_CHANNEL = 16
-BUTTON1_CHANNEL = 20
-BUTTON2_CHANNEL = 21
+PLAY_BUTTON_CHANNEL = 20
+DELETE_BUTTON_CHANNEL = 21
 COUNTS_PER_WORD = 50
 SECONDS_PER_MINUTE = 60
 
@@ -23,12 +23,12 @@ class Server:
 
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(LED_CHANNEL, GPIO.OUT, initial=False)
-		GPIO.setup(BUTTON1_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-		GPIO.setup(BUTTON2_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+		GPIO.setup(PLAY_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.setup(DELETE_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 		# Can probably lower the bouncetime when I get a decent button.
-		GPIO.add_event_detect(BUTTON1_CHANNEL, GPIO.RISING, callback=self.playMessage, bouncetime=1000)
-		GPIO.add_event_detect(BUTTON2_CHANNEL, GPIO.RISING, callback=self.deleteMessage, bouncetime=1000)
+		GPIO.add_event_detect(PLAY_BUTTON_CHANNEL, GPIO.FALLING, callback=self.playMessage, bouncetime=1000)
+		GPIO.add_event_detect(DELETE_BUTTON_CHANNEL, GPIO.FALLING, callback=self.deleteMessage, bouncetime=1000)
 
 		socket.setdefaulttimeout(1)
 		try:

@@ -9,7 +9,7 @@ from time import time, sleep
 from src.symbols import Symbol
 import setup
 
-CHANNEL = 4
+KEY_CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
 END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
@@ -35,7 +35,7 @@ class Client:
 		self.destinations.read(setup.DEST_FILE)
 
 		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+		GPIO.setup(KEY_CHANNEL, GPIO.IN)
 		self.resetCallbacks(self.initCallback)
 
 		killed.wait()
@@ -60,11 +60,7 @@ class Client:
 
 
 	def initCallback(self, channel):
-		# Hacky way to wait until bouncing stops
-		# until I get a capacitor.
-		sleep(0.040)
-
-		if GPIO.input(channel) == 1:
+		if GPIO.input(channel) == 0:
 			self.initHandlePress()
 		else:
 			self.initHandleRelease()
@@ -111,11 +107,7 @@ class Client:
 		self.message.append(Symbol.WORD_SPACE)
 
 	def messageCallback(self, channel):
-		# Hacky way to wait until bouncing stops
-		# until I get a capacitor.
-		sleep(0.040)
-
-		if GPIO.input(channel) == 1:
+		if GPIO.input(channel) == 0:
 			self.handlePress()
 		else:
 			self.handleRelease()
@@ -202,11 +194,14 @@ class Client:
 			self.sendToServer(sock, self.createMessage())
 			sock.close()
 
-	def sendToServer(self, sock, message):
+	def connectToServer(self, server, port):
 		try:
-			sock.sendall(message)
+			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			sock.connect((server, int(port)))
+			return sock
 		except socket.error as e:
-			print("Failed to send message.  {}: {}".format(e.errno, e.strerror))
+			print("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
 			sys.exit()
 
 	def createMessage(self):
@@ -217,16 +212,13 @@ class Client:
 			messageData |= (symbol << i*2)
 		return messageData.to_bytes(ceil(messageLen/4), byteorder='big')
 
-	def resetCallbacks(self, callback):
-		GPIO.remove_event_detect(CHANNEL)
-		GPIO.add_event_detect(CHANNEL, GPIO.BOTH, callback=callback, bouncetime=50)
-
-	def connectToServer(self, server, port):
+	def sendToServer(self, sock, message):
 		try:
-			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			sock.connect((server, int(port)))
-			return sock
+			sock.sendall(message)
 		except socket.error as e:
-			print("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
+			print("Failed to send message.  {}: {}".format(e.errno, e.strerror))
 			sys.exit()
+
+	def resetCallbacks(self, callback):
+		GPIO.remove_event_detect(KEY_CHANNEL)
+		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=callback)
