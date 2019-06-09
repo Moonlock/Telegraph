@@ -221,4 +221,4 @@ class Client:
 
 	def resetCallbacks(self, callback):
 		GPIO.remove_event_detect(KEY_CHANNEL)
-		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=callback)
+		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=callback, bouncetime=10)
