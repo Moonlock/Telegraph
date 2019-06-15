@@ -98,7 +98,7 @@ class morseTest:
 		score = diff.ratio() * 100
 		print()
 		print("Score: " + str(score) + "%")
-		if score >= 95:
+		if score >= 90:
 			users.increaseCharacters(self.user)
 
 	def stopTest(self):
