@@ -11,6 +11,7 @@ import setup
 
 KEY_CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
+INIT_MESSAGE_SYMBOL_LENGTH = 6	# Includes word space following init message
 END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
@@ -34,11 +35,17 @@ class Client:
 		self.destinations = configparser.ConfigParser()
 		self.destinations.read(setup.DEST_FILE)
 
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(KEY_CHANNEL, GPIO.IN)
-		self.resetCallbacks(self.initCallback)
+		self.callback = self.initCallback
+		self.setUpCallback()
 
 		killed.wait()
+
+	def setUpCallback():
+		def innerCallback(channel):
+			self.callback(channel)
+		GPIO.setmode(GPIO.BCM)
+		GPIO.setup(KEY_CHANNEL, GPIO.IN)
+		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=innerCallback, bouncetime=10)
 
 	def debug(self, message):
 		if self.dbgEnabled:
@@ -96,7 +103,7 @@ class Client:
 
 	def startMessage(self):
 		self.addInitialization()
-		self.resetCallbacks(self.messageCallback)
+		self.callback = self.messageCallback
 
 	def addInitialization(self):
 		self.message.append(Symbol.DAH)
@@ -104,7 +111,6 @@ class Client:
 		self.message.append(Symbol.DAH)
 		self.message.append(Symbol.DIT)
 		self.message.append(Symbol.DAH)
-		self.message.append(Symbol.WORD_SPACE)
 
 	def messageCallback(self, channel):
 		if GPIO.input(channel) == 0:
@@ -117,7 +123,7 @@ class Client:
 
 		if releaseTimeMs > 5*self.timeUnit:
 			self.message.append(Symbol.WORD_SPACE)
-			if self.waitingForDest:
+			if self.waitingForDest and len(self.message) > INIT_MESSAGE_SYMBOL_LENGTH:
 				self.dests = self.parseDestination()
 				return
 
@@ -176,7 +182,8 @@ class Client:
 
 	def callSignError(self, message):
 		self.debug(message + ": Canceling message.")
-		self.resetCallbacks(self.initCallback)
+		self.message.clear()
+		self.callback = self.initCallback
 
 	def checkFinish(self):
 		if self.message[-5:] == END_MESSAGE:
@@ -186,7 +193,7 @@ class Client:
 				self.waitingForDest = True
 				self.dests = None
 
-			self.resetCallbacks(self.initCallback)
+			self.callback = self.initCallback
 
 	def sendMessage(self):
 		for dest in self.dests:
@@ -218,7 +225,3 @@ class Client:
 		except socket.error as e:
 			print("Failed to send message.  {}: {}".format(e.errno, e.strerror))
 			sys.exit()
-
-	def resetCallbacks(self, callback):
-		GPIO.remove_event_detect(KEY_CHANNEL)
-		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=callback, bouncetime=10)
