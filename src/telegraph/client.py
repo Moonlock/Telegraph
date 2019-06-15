@@ -37,7 +37,8 @@ class Client:
 
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(KEY_CHANNEL, GPIO.IN)
-		self.resetCallbacks(self.initCallback)
+		self.callback = self.initCallback
+		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=self.callback, bouncetime=10)
 
 		killed.wait()
 
@@ -97,7 +98,7 @@ class Client:
 
 	def startMessage(self):
 		self.addInitialization()
-		self.resetCallbacks(self.messageCallback)
+		self.initCallback = self.messageCallback
 
 	def addInitialization(self):
 		self.message.append(Symbol.DAH)
@@ -177,7 +178,7 @@ class Client:
 	def callSignError(self, message):
 		self.debug(message + ": Canceling message.")
 		self.message.clear()
-		self.resetCallbacks(self.initCallback)
+		self.initCallback = self.initCallback
 
 	def checkFinish(self):
 		if self.message[-5:] == END_MESSAGE:
@@ -187,7 +188,7 @@ class Client:
 				self.waitingForDest = True
 				self.dests = None
 
-			self.resetCallbacks(self.initCallback)
+			self.callback = self.initCallback
 
 	def sendMessage(self):
 		for dest in self.dests:
@@ -219,7 +220,3 @@ class Client:
 		except socket.error as e:
 			print("Failed to send message.  {}: {}".format(e.errno, e.strerror))
 			sys.exit()
-
-	def resetCallbacks(self, callback):
-		GPIO.remove_event_detect(KEY_CHANNEL)
-		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=callback, bouncetime=10)
