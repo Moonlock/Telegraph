@@ -35,12 +35,17 @@ class Client:
 		self.destinations = configparser.ConfigParser()
 		self.destinations.read(setup.DEST_FILE)
 
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(KEY_CHANNEL, GPIO.IN)
 		self.callback = self.initCallback
-		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=self.callback, bouncetime=10)
+		self.setUpCallback()
 
 		killed.wait()
+
+	def setUpCallback():
+		def innerCallback(channel):
+			self.callback(channel)
+		GPIO.setmode(GPIO.BCM)
+		GPIO.setup(KEY_CHANNEL, GPIO.IN)
+		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=innerCallback, bouncetime=10)
 
 	def debug(self, message):
 		if self.dbgEnabled:
@@ -98,7 +103,7 @@ class Client:
 
 	def startMessage(self):
 		self.addInitialization()
-		self.initCallback = self.messageCallback
+		self.callback = self.messageCallback
 
 	def addInitialization(self):
 		self.message.append(Symbol.DAH)
@@ -178,7 +183,7 @@ class Client:
 	def callSignError(self, message):
 		self.debug(message + ": Canceling message.")
 		self.message.clear()
-		self.initCallback = self.initCallback
+		self.callback = self.initCallback
 
 	def checkFinish(self):
 		if self.message[-5:] == END_MESSAGE:
