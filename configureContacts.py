@@ -133,6 +133,9 @@ def toMorse(sign):
 	for char in sign:
 		signMorse.extend(morse[char])
 		signMorse.append(Symbol.CHAR_SPACE)
+
+	# Remove trailing character space
+	signMorse = signMorse[:-1]
 	return "".join([str(int(m)) for m in signMorse])
 
 def editContact(userData):

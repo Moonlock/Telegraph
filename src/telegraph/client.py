@@ -11,6 +11,7 @@ import setup
 
 KEY_CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
+INIT_MESSAGE_SYMBOL_LENGTH = 6	# Includes word space following init message
 END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
@@ -104,7 +105,6 @@ class Client:
 		self.message.append(Symbol.DAH)
 		self.message.append(Symbol.DIT)
 		self.message.append(Symbol.DAH)
-		self.message.append(Symbol.WORD_SPACE)
 
 	def messageCallback(self, channel):
 		if GPIO.input(channel) == 0:
@@ -117,7 +117,7 @@ class Client:
 
 		if releaseTimeMs > 5*self.timeUnit:
 			self.message.append(Symbol.WORD_SPACE)
-			if self.waitingForDest:
+			if self.waitingForDest and len(self.message) > INIT_MESSAGE_SYMBOL_LENGTH:
 				self.dests = self.parseDestination()
 				return
 
@@ -176,6 +176,7 @@ class Client:
 
 	def callSignError(self, message):
 		self.debug(message + ": Canceling message.")
+		self.message.clear()
 		self.resetCallbacks(self.initCallback)
 
 	def checkFinish(self):
