@@ -40,7 +40,7 @@ class Client:
 
 		killed.wait()
 
-	def setUpCallback():
+	def setUpCallback(self):
 		def innerCallback(channel):
 			self.callback(channel)
 		GPIO.setmode(GPIO.BCM)
