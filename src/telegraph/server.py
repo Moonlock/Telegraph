@@ -2,9 +2,10 @@ from src.symbols import Symbol
 
 from collections import deque
 from RPi import GPIO
-from subprocess import call
+from subprocess import Popen
 import socket
 import sys
+from os import remove
 
 LED_CHANNEL = 16
 PLAY_BUTTON_CHANNEL = 20
@@ -12,14 +13,31 @@ DELETE_BUTTON_CHANNEL = 21
 COUNTS_PER_WORD = 50
 SECONDS_PER_MINUTE = 60
 
+SOUND_FILES_PATH = "resources/sounds/"
+DIT_FILE = SOUND_FILES_PATH + "dit.sox"
+DAH_FILE = SOUND_FILES_PATH + "dah.sox"
+SYMBOL_SPACE_FILE = SOUND_FILES_PATH + "symbol_space.sox"
+CHAR_SPACE_FILE = SOUND_FILES_PATH + "char_space.sox"
+WORD_SPACE_FILE = SOUND_FILES_PATH + "word_space.sox"
+INIT_SPACE_FILE = SOUND_FILES_PATH + "init_space.sox"
+
 class Server:
 
 	def __init__(self, port, wpm, killed, debug):
 		self.dbgEnabled = debug
-		self.messages = deque()
 
 		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
-		self.symbolTimings = self.createTimings(timeUnit)
+		self.createAudioFiles(timeUnit)
+
+		self.curMessage = 0
+		self.nextMessage = 0
+
+		self.symbolToAudioFileMap = {
+				Symbol.DIT: DIT_FILE,
+				Symbol.DAH: DAH_FILE,
+				Symbol.CHAR_SPACE: CHAR_SPACE_FILE,
+				Symbol.WORD_SPACE: WORD_SPACE_FILE
+		}
 
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(LED_CHANNEL, GPIO.OUT, initial=False)
@@ -55,51 +73,64 @@ class Server:
 		if self.dbgEnabled:
 			print(message)
 
-	def createTimings(self, timeUnit):
-		return {
-			Symbol.DIT: {"duration": timeUnit, "sleep": 2*timeUnit},
-			Symbol.DAH: {"duration": 3*timeUnit, "sleep": 4*timeUnit},
-			Symbol.CHAR_SPACE: {"duration": 0, "sleep": 3*timeUnit},
-			Symbol.WORD_SPACE: {"duration": 0, "sleep": 7*timeUnit},
-		}
+	def createAudioFiles(self, timeUnit):
+		Popen(['sox', '-n', DIT_FILE, 'synth', timeUnit, 'sin', '900'])
+		Popen(['sox', '-n', DAH_FILE, 'synth', 3*timeUnit, 'sin', '900'])
+		Popen(['sox', '-n', SYMBOL_SPACE_FILE, 'trim', 0, timeUnit])
+		Popen(['sox', '-n', CHAR_SPACE_FILE, 'trim', 0, 3*timeUnit])
+		Popen(['sox', '-n', WORD_SPACE_FILE, 'trim', 0, 7*timeUnit])
+
+		# First second or so seems to get cut off on the Pi, so add 2 seconds of silence to the start
+		Popen(['sox', '-n', INIT_SPACE_FILE, 'trim', 0, 2])
 
 	def handleMessage(self, msg):
-		sonicPiCode = ""
-		for byte in msg:
-			symbols = self.parseSymbols(byte)
-			while symbols:
-				symbol = symbols.pop()
-				sonicPiCode += self.addSymbolToCode(self.symbolTimings[symbol])
+		self.createMessageFile(msg)
 
-		self.messages.append(sonicPiCode)
+		self.nextMessage += 1
 		GPIO.output(LED_CHANNEL, GPIO.HIGH)
 		self.debug("LED on.")
-		call(["sonic_pi", sonicPiCode])
+
+	def createMessageFile(self, msg):
+		prevIsChar = False
+		msgFileList = []
+		for byte in msg:
+			symbols = self.parseSymbols(byte)
+
+			while symbols:
+				symbol = symbols.pop()
+				isChar = symbol.isChar()
+				if isChar and prevIsChar:
+					msgFileList.append(SYMBOL_SPACE_FILE)
+
+				msgFileList.append(self.symbolToAudioFileMap.get(symbol))
+				prevIsChar = isChar
+
+		filename = "{}.sox".format(self.nextMessage)
+		command = ['sox', INIT_SPACE_FILE]
+		command.extend(msgFileList)
+		command.append(filename)
+		Popen(command)
+		Popen(['play', '-q', filename])
 
 	def parseSymbols(self, byte):
 		symbols = []
 		for i in range(4):
-			symbols.append((byte >> i*2) & 0x3)
+			symbol = Symbol((byte >> i*2) & 0x3)
+			symbols.append(symbol)
 		return symbols
-
-	def addSymbolToCode(self, timing):
-		code = ""
-		if timing["duration"]:
-			code = "play 80, release: " + str(timing["duration"]) + ";"
-		code += "sleep " + str(timing["sleep"]) + ";"
-		return code
 
 	def playMessage(self, channel):
 		self.debug("Play message.")
-		if self.messages:
-			call(["sonic_pi", self.messages[0]])
+		if self.curMessage < self.nextMessage:
+			Popen(['play', '-q', "{}.sox".format(self.curMessage)])
 
 	def deleteMessage(self, channel):
 		self.debug("delete message.")
-		if self.messages:
-			self.messages.popleft()
+		if self.curMessage < self.nextMessage:
+			remove("{}.sox".format(self.curMessage))
+			self.curMessage += 1
 
-			if not self.messages:
+			if self.curMessage == self.nextMessage:
 				GPIO.output(LED_CHANNEL, GPIO.LOW)
 				self.debug("LED off.")
 

@@ -5,3 +5,6 @@ class Symbol(IntEnum):
 	WORD_SPACE = 1
 	DIT = 2
 	DAH = 3
+
+	def isChar(self):
+		return self.value >= 2
