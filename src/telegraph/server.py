@@ -67,14 +67,14 @@ class Server:
 				continue
 
 	def createAudioFiles(self, timeUnit):
-		Popen(['sox', '-n', DIT_FILE, 'synth', timeUnit, 'sin', '900'])
-		Popen(['sox', '-n', DAH_FILE, 'synth', 3*timeUnit, 'sin', '900'])
-		Popen(['sox', '-n', SYMBOL_SPACE_FILE, 'trim', 0, timeUnit])
-		Popen(['sox', '-n', CHAR_SPACE_FILE, 'trim', 0, 3*timeUnit])
-		Popen(['sox', '-n', WORD_SPACE_FILE, 'trim', 0, 7*timeUnit])
+		Popen(['sox', '-n', DIT_FILE, 'synth', str(timeUnit), 'sin', '900'])
+		Popen(['sox', '-n', DAH_FILE, 'synth', str(3*timeUnit), 'sin', '900'])
+		Popen(['sox', '-n', SYMBOL_SPACE_FILE, 'trim', '0', str(timeUnit)])
+		Popen(['sox', '-n', CHAR_SPACE_FILE, 'trim', '0', str(3*timeUnit)])
+		Popen(['sox', '-n', WORD_SPACE_FILE, 'trim', '0', str(7*timeUnit)])
 
 		# First second or so seems to get cut off on the Pi, so add 2 seconds of silence to the start
-		Popen(['sox', '-n', INIT_SPACE_FILE, 'trim', 0, 2])
+		Popen(['sox', '-n', INIT_SPACE_FILE, 'trim', '0', '2'])
 
 	def handleMessage(self, msg):
 		self.createMessageFile(msg)
