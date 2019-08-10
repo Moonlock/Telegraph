@@ -45,26 +45,23 @@ class Client:
 			self.callback(channel)
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(KEY_CHANNEL, GPIO.IN)
-		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=innerCallback, bouncetime=10)
+		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=innerCallback, bouncetime=20)
 
 	def debug(self, message):
 		if self.dbgEnabled:
 			print(message)
 
 	def timePress(self):
-		now = time()
-
-		self.lastRelease = now
-		self.debug("Press: " + str(int((now - self.lastPress) * 1000)))
-		return (now - self.lastPress) * 1000
+		self.lastRelease = time()
+		pressTime = (self.lastRelease - self.lastPress) * 1000
+		self.debug("Press: " + str(int(pressTime)))
+		return pressTime
 
 	def timeRelease(self):
-		now = time()
-
-		self.lastPress = now
-		self.debug("Release: " + str(int((now - self.lastRelease) * 1000)))
-		return (now - self.lastRelease) * 1000
-
+		self.lastPress = time()
+		releaseTime = (self.lastPress - self.lastRelease) * 1000
+		self.debug("Release: " + str(int(releaseTime)))
+		return releaseTime
 
 	def initCallback(self, channel):
 		if GPIO.input(channel) == 0:
