@@ -1,41 +1,40 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Circuit Diagram, cdlibrary.dll 1.0.0.0 -->
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" width="440" height="240" xmlns="http://www.w3.org/2000/svg">
-	<text x="290" y="100" style="font-family:Arial;font-size:11px;text-anchor:start" dy=".3em">Telegraph Key</text>
-	<line x1="410" y1="120" x2="410" y2="208" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="402" y1="208" x2="418" y2="208" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="405" y1="214" x2="415" y2="214" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="408" y1="220" x2="412" y2="220" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="240" y1="120" x2="311" y2="120" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="339" y1="120" x2="410" y2="120" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<ellipse cx="314" cy="120" rx="3" ry="3" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
-	<ellipse cx="336" cy="120" rx="3" ry="3" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
-	<line x1="317" y1="118" x2="334" y2="112" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="250" y1="50" x2="250" y2="65" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="250" y1="105" x2="250" y2="120" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<path d="M 250,65 L 250,67 L 243,70 L 257,76 L 243,82 L 257,88 L 243,94 L 257,100 L 250,103 L 250,105" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<text x="236" y="85" style="font-family:Arial;font-size:11px;text-anchor:end" dy=".3em">1 kΩ</text>
-	<path d="M 245,40 L 255,40 L 250,30 L 245,40" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<text x="244" y="34" style="font-family:Arial;font-size:12px;text-anchor:end" dy=".3em">+3.3V</text>
-	<line x1="250" y1="40" x2="250" y2="50" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<text x="82" y="120" style="font-family:Arial;font-size:12px;text-anchor:end" dy=".3em"></text>
-	<line x1="93" y1="120" x2="160" y2="120" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<ellipse cx="90" cy="120" rx="3" ry="3" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
-	<line x1="160" y1="120" x2="185" y2="120" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="225" y1="120" x2="250" y2="120" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<path d="M 185,120 L 187,120 L 190,113 L 196,127 L 202,113 L 208,127 L 214,113 L 220,127 L 223,120 L 225,120" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<text x="205" y="103" style="font-family:Arial;font-size:11px;text-anchor:middle" dy=".3em">1 kΩ</text>
-	<line x1="160" y1="190" x2="160" y2="208" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="152" y1="208" x2="168" y2="208" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="155" y1="214" x2="165" y2="214" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="158" y1="220" x2="162" y2="220" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="160" y1="130" x2="160" y2="145" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<line x1="160" y1="185" x2="160" y2="200" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<path d="M 160,145 L 160,147 L 153,150 L 167,156 L 153,162 L 167,168 L 153,174 L 167,180 L 160,183 L 160,185" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<text x="146" y="165" style="font-family:Arial;font-size:11px;text-anchor:end" dy=".3em">1 kΩ</text>
-	<text x="30" y="120" style="font-family:Arial;font-size:11px;text-anchor:start" dy=".3em">GPIO 04</text>
-	<line x1="160" y1="120" x2="160" y2="130" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
-	<ellipse cx="250" cy="120" rx="2" ry="2" style="fill-opacity:1;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
-	<ellipse cx="160" cy="120" rx="2" ry="2" style="fill-opacity:1;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
+<svg version="1.1" width="440" height="260" xmlns="http://www.w3.org/2000/svg">
+	<text x="300" y="120" style="font-family:Arial;font-size:11px;text-anchor:start" dy=".3em">Telegraph key</text>
+	<path d="M 255,50 L 265,50 L 260,40 L 255,50" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<text x="254" y="44" style="font-family:Arial;font-size:12px;text-anchor:end" dy=".3em">+3.3V</text>
+	<line x1="260" y1="50" x2="260" y2="60" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="400" y1="140" x2="400" y2="218" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="392" y1="218" x2="408" y2="218" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="395" y1="224" x2="405" y2="224" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="398" y1="230" x2="402" y2="230" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="260" y1="140" x2="316" y2="140" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="344" y1="140" x2="400" y2="140" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<ellipse cx="319" cy="140" rx="3" ry="3" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
+	<ellipse cx="341" cy="140" rx="3" ry="3" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
+	<line x1="322" y1="138" x2="339" y2="132" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="260" y1="50" x2="260" y2="75" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="260" y1="115" x2="260" y2="140" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<path d="M 260,75 L 260,77 L 253,80 L 267,86 L 253,92 L 267,98 L 253,104 L 267,110 L 260,113 L 260,115" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<text x="246" y="95" style="font-family:Arial;font-size:11px;text-anchor:end" dy=".3em">1 kΩ</text>
+	<line x1="130" y1="140" x2="175" y2="140" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="215" y1="140" x2="260" y2="140" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<path d="M 175,140 L 177,140 L 180,133 L 186,147 L 192,133 L 198,147 L 204,133 L 210,147 L 213,140 L 215,140" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<text x="195" y="123" style="font-family:Arial;font-size:11px;text-anchor:middle" dy=".3em">1 kΩ</text>
+	<line x1="140" y1="200" x2="140" y2="218" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="132" y1="218" x2="148" y2="218" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="135" y1="224" x2="145" y2="224" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="138" y1="230" x2="142" y2="230" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="140" y1="140" x2="140" y2="171" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="140" y1="179" x2="140" y2="210" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="126" y1="171" x2="154" y2="171" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<line x1="126" y1="179" x2="154" y2="179" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<text x="120" y="175" style="font-family:Arial;font-size:11px;text-anchor:end" dy=".3em">1 µF</text>
+	<text x="82" y="140" style="font-family:Arial;font-size:12px;text-anchor:end" dy=".3em">GPIO 04</text>
+	<line x1="93" y1="140" x2="130" y2="140" style="stroke:rgb(0, 0, 0);stroke-linecap:square;stroke-width:2" />
+	<ellipse cx="90" cy="140" rx="3" ry="3" style="fill-opacity:0;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
+	<ellipse cx="260" cy="140" rx="2" ry="2" style="fill-opacity:1;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
+	<ellipse cx="140" cy="140" rx="2" ry="2" style="fill-opacity:1;fill:rgb(0, 0, 0);stroke:rgb(0, 0, 0);stroke-width:2" />
 </svg>
