@@ -6,6 +6,8 @@ import sys
 
 CONFIG_FILE = 'resources/config.ini'
 DEST_FILE = 'resources/addresses.ini'
+CONTACTS_FILE = 'resources/contacts.ini'
+GROUPS_FILE = 'resources/groups.ini'
 
 def main():
 
