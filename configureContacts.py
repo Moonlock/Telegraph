@@ -1,8 +1,8 @@
 #! /usr/bin/python3
 
-from src.learnMorse.alphabet import morse
-from src.symbols import Symbol
-from src.telegraph.addressWrapper import Destination
+from src.telegraph.destinationConfig import DestinationConfig
+from src.telegraph.destination import Destination
+from src.telegraphFunctions import toMorse
 import setup
 
 import configparser
@@ -17,20 +17,15 @@ def error(message):
 	print(message)
 	sys.exit()
 
+
+destConfig = DestinationConfig(True, error)
+
 def main():
 	config = configparser.ConfigParser()
 	config.read(setup.CONFIG_FILE)
 	if config.sections() and not config['Client'].getboolean('Multiple Destinations'):
 		print()
 		print('Warning: Multiple destinations is disabled- contacts and groups will be ignored.')
-
-	global _contacts
-	_contacts = configparser.ConfigParser()
-	_contacts.read(setup.CONTACTS_FILE)
-
-	global _groups
-	_groups = configparser.ConfigParser()
-	_groups.read(setup.GROUPS_FILE)
 
 	try:
 		while True:
@@ -40,8 +35,8 @@ def main():
 
 
 def mainloop():
-	contacts = Destination.getAllContacts(error)
-	groups = Destination.getAllGroups(error)
+	contacts = destConfig.getAllContacts()
+	groups = destConfig.getAllGroups()
 	idToConfigMap = {i:dest for i, dest in enumerate(contacts + groups)}
 
 	displayMenu(contacts, groups)
@@ -53,13 +48,13 @@ def mainloop():
 	if selection.upper() == 'C':
 		print("Creating new contact.")
 		contactConfig = createNewContact()
-		Destination.add(contactConfig, False, error)
+		destConfig.addContact(contactConfig)
 		return
 
 	if selection.upper() == 'G':
 		print("Creating new group.")
 		groupConfig = createNewGroup()
-		Destination.add(groupConfig, True, error)
+		destConfig.addGroup(groupConfig)
 		return
 
 	if selection.upper() == 'D':
@@ -83,7 +78,7 @@ def displayMenu(contacts, groups):
 	print("          ~CONTACTS~")
 	for contact in contacts:
 		print("    " + str(i) + ": " + contact.getName())
-		print("        " + contact.getSign() + "\t" + contact.addressString())
+		print("        " + contact.getSign() )#+ "\t" + contact.addressString())
 		i += 1
 
 	print()
@@ -91,7 +86,7 @@ def displayMenu(contacts, groups):
 	for group in groups:
 		print("    " + str(i) + ": " + group.getName())
 		print("        " + group.getSign() + "\t" +
-			", ".join(group.members))
+			", ".join(group.getMemberCallsigns()))
 		i += 1
 
 	print()
@@ -114,23 +109,11 @@ def createNewContact(oldContact=None):
 	contactConfig["Name"] = getInput(Destination.getName, "Name")
 	sign = getInput(Destination.getSign, "Call sign").upper()
 	contactConfig["Sign"] = sign
-	contactConfig["Code"] = toMorse(sign)
-	contactConfig["Address"] = getInput(Destination.getAddress, "IP Address")		#TODO: This is terrible.
-	contactConfig["Port"] = getInput(Destination.getAddress, "Port")
-	contactConfig["Group"] = False
+	contactConfig["Address"] = getInput(Destination.getEndpoints, "IP Address")		#TODO: This is terrible.
+	contactConfig["Port"] = getInput(Destination.getEndpoints, "Port")
 	print("")
 
 	return contactConfig
-
-def toMorse(sign):
-	signMorse = []
-	for char in sign:
-		signMorse.extend(morse[char])
-		signMorse.append(Symbol.CHAR_SPACE)
-
-	# Remove trailing character space
-	signMorse = signMorse[:-1]
-	return "".join([str(int(m)) for m in signMorse])
 
 def editContact(contact):
 	print("Editing contact " + contact.getName + ".")
@@ -142,9 +125,7 @@ def createNewGroup():
 	groupConfig["Name"] = input("Group name: ")
 	sign = input("Call sign: ").upper()
 	groupConfig["Sign"] = sign
-	groupConfig["Code"] = toMorse(sign)
 	groupConfig["Members"] = getMembers()
-	groupConfig["Group"] = True
 	print("")
 
 	return groupConfig
@@ -156,14 +137,12 @@ def editGroup(group):
 	newGroup["Name"] = input("Group name [" + group.getName() + "]: ") or group.getName()
 	sign = input("Call sign [" + group.getSign() + "]: ") or group.getSign()
 	newGroup["Sign"] = sign
-	newGroup["Code"] = toMorse(sign)
 	newGroup["Members"] = getMembers(group.getMemberCallsigns()) or group.getMemberCallsigns()
-	newGroup["Group"] = True
 
 	group.update(newGroup)
 
 def getMembers(oldList=None):
-	contacts = Destination.getAllContacts(error)
+	contacts = destConfig.getAllContacts()
 
 	print()
 	for contact in contacts:
@@ -177,13 +156,13 @@ def getMembers(oldList=None):
 
 	memberList = []
 	for member in [m.upper() for m in members.split()]:
-		if not member in [contact.getSign for contact in contacts]:
+		if not member in [contact.getSign() for contact in contacts]:
 			print("Error: " + member + " is not in contacts list; not adding to group.")
 		else:
 			code = str(toMorse(member))
 			memberList.append(code)
 
-	return ",".join(memberList)
+	return " ".join(memberList)
 
 def deleteDestination(idToConfigMap):
 	selection = input(" Delete which contact/group? ")
