@@ -38,6 +38,12 @@ class Contact(Destination):
 	def getMemberCallsigns(self):
 		self.errorCallback(self.getName() + " is not a group.")
 
+	def getAddress(self):
+		return self.config["Address"]
+
+	def getPort(self):
+		return self.config["Port"]
+
 	def update(self, newConfig):
 		self.contactsConfig.remove_section(self.callsign)
 		if newConfig is not None:

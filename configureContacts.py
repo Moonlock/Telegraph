@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 from src.telegraph.destinationConfig import DestinationConfig
-from src.telegraph.destination import Destination
+from src.telegraph.destination import Group
 from src.telegraphFunctions import toMorse
 import setup
 
@@ -65,7 +65,7 @@ def mainloop():
 		sys.exit()
 
 	dest = getConfigFromSelection(selection, idToConfigMap)
-	if(dest.isGroup):
+	if(isinstance(dest, Group)):
 		editGroup(dest)
 	else:
 		editContact(dest)
@@ -98,26 +98,24 @@ def displayMenu(contacts, groups):
 
 def createNewContact(oldContact=None):
 
-	def getInput(getter, prompt):
-		if oldContact is None:
-			if prompt == 'Port':
-				return input("Port [8000]: ") or 8000
-			return input(prompt + ": ")
-		return input(prompt + " [" + oldContact.getter() + "]: ") or oldContact.getter()
-
 	contactConfig = {}
-	contactConfig["Name"] = getInput(Destination.getName, "Name")
-	sign = getInput(Destination.getSign, "Call sign").upper()
-	contactConfig["Sign"] = sign
-	contactConfig["Address"] = getInput(Destination.getEndpoints, "IP Address")		#TODO: This is terrible.
-	contactConfig["Port"] = getInput(Destination.getEndpoints, "Port")
+	contactConfig["Name"] = input("Name")
+	contactConfig["Sign"] = input("Call sign").upper()
+	contactConfig["Address"] = input("IP Address")
+	contactConfig["Port"] = input("Port")
 	print("")
 
 	return contactConfig
 
 def editContact(contact):
-	print("Editing contact " + contact.getName + ".")
-	newConfig = createNewContact(contact)
+	print("Editing contact " + contact.getName() + ".")
+
+	newConfig = {}
+	newConfig["Name"] = input("Name [" + contact.getName() + "]: ") or contact.getName()
+	newConfig["Sign"] = input("Call sign [" + contact.getSign() + "]: ").upper() or contact.getSign()
+	newConfig["Address"] = input("IP Address [" + contact.getAddress() + "]: ") or contact.getAddress()
+	newConfig["Port"] = input("Port [" + contact.getPort() + "]: ") or contact.getPort()
+
 	contact.update(newConfig)
 
 def createNewGroup():
@@ -135,8 +133,7 @@ def editGroup(group):
 
 	newGroup = {}
 	newGroup["Name"] = input("Group name [" + group.getName() + "]: ") or group.getName()
-	sign = input("Call sign [" + group.getSign() + "]: ") or group.getSign()
-	newGroup["Sign"] = sign
+	newGroup["Sign"] = input("Call sign [" + group.getSign() + "]: ").upper() or group.getSign()
 	newGroup["Members"] = getMembers(group.getMemberCallsigns()) or group.getMemberCallsigns()
 
 	group.update(newGroup)
@@ -151,7 +148,7 @@ def getMembers(oldList=None):
 
 	print("Enter call signs of members, separated by spaces:")
 	if oldList:
-		print("    [" + oldList + "]")
+		print("    [" + " ".join(oldList) + "]")
 	members = input(" > ")
 
 	memberList = []
