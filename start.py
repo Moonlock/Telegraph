@@ -1,27 +1,27 @@
 #! /usr/bin/python3
 
+from threading import Thread, Event
+import configparser
+import signal
+
+from RPi import GPIO
+from src import constants
+from src.commonFunctions import fatal
 from src.telegraph import client
 from src.telegraph import server
-import configparser
 import setup
-import signal
-import sys
-from RPi import GPIO
-from threading import Thread, Event
+
 
 config = configparser.ConfigParser()
-config.read(setup.CONFIG_FILE)
+config.read(constants.CONFIG_FILE)
 if not config.sections():
 	print('Running setup script.')
 	setup.main()
-	config.read(setup.CONFIG_FILE)
+	config.read(constants.CONFIG_FILE)
 	if not config.sections():
-		sys.exit()
+		fatal("Error reading config file.")
 
 killed = Event()
-
-commonConfig = config['Common']
-debug = commonConfig.getboolean('Debug')
 
 clientConfig = config['Client']
 multiDest = clientConfig.getboolean('Multiple Destinations')
@@ -32,14 +32,14 @@ else:
 	serverAddress = clientConfig['Address']
 	serverPort = clientConfig['Port']
 
-clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, killed, debug))
+clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, killed))
 clientThread.start()
 
 serverConfig = config['Server']
 listenPort = serverConfig['Port']
 wpm = int(serverConfig['WPM'])
 
-serverThread = Thread(target=server.Server, args=(listenPort, wpm, killed, debug))
+serverThread = Thread(target=server.Server, args=(listenPort, wpm, killed))
 serverThread.start()
 
 def handleSigInt(sig, frame):

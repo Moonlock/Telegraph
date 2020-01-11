@@ -4,13 +4,14 @@ import configparser
 import os.path
 import sys
 
-CONFIG_FILE = 'resources/config.ini'
-DEST_FILE = 'resources/addresses.ini'
+from src import constants
+from src.commonFunctions import writeConfig
+
 
 def main():
 
 	try:
-		if os.path.isfile(CONFIG_FILE):
+		if os.path.isfile(constants.CONFIG_FILE):
 			response = input('Config file already exists.  Recreate? [y/N]: ' or 'n')
 			if response.lower() != 'y':
 				sys.exit()
@@ -37,12 +38,7 @@ def main():
 	config['Server'] = serverConfig
 	config['Client'] = clientConfig
 	config['Common'] = commonConfig
-	try:
-		with open(CONFIG_FILE, 'w') as configFile:
-			config.write(configFile)
-			print('Setup complete.')
-	except IOError:
-		print("Failed to create configuration file.")
+	writeConfig(constants.CONFIG_FILE, config)
 
 	if multiDest:
 		print("")
