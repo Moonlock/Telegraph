@@ -1,18 +1,17 @@
 #! /usr/bin/python3
 
-from src.telegraph.destinationConfig import DestinationConfig
-from src.telegraph.destination import Group
-from src.commonFunctions import toMorse, fatal
-import setup
-
 import configparser
 import sys
 
+from src.commonFunctions import toMorse, fatal
+from src.telegraph.destination import Group
+from src.telegraph.destinationConfig import DestinationConfig
+import setup
+
+
 # TODO: Removing a contact or changing their call sign will cause an error
 #	if they're in a group.
-
 # TODO: Check for duplicate call signs when creating/updating.
-
 destConfig = DestinationConfig(fatal)
 
 def main():

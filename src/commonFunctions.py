@@ -1,9 +1,10 @@
+import configparser
+import sys
+
 from src.learnMorse.alphabet import morse
 from src.symbols import Symbol
-
-import configparser
 import setup
-import sys
+
 
 config = configparser.ConfigParser()
 config.read(setup.CONFIG_FILE)

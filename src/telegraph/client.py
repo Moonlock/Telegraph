@@ -1,13 +1,12 @@
-import socket
-import sys
-
 from math import ceil
-from RPi import GPIO
 from time import time
+import socket
 
+from RPi import GPIO
+from src.commonFunctions import debug, fatal
 from src.symbols import Symbol
 from src.telegraph.destinationConfig import DestinationConfig
-from src.commonFunctions import debug, fatal
+
 
 KEY_CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15

@@ -4,6 +4,7 @@ import configparser
 
 from src.commonFunctions import fatal, writeConfig
 
+
 USERS_FILE = 'src/learnMorse/users.ini'
 
 def createNewUser(config):

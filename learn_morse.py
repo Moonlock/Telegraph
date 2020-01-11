@@ -1,7 +1,9 @@
 #! /usr/bin/python3
 
-from src.learnMorse import learnMorse, users
 import sys
+
+from src.learnMorse import learnMorse, users
+
 
 try:
 	(user, userConfig) = users.getUserData()

@@ -1,13 +1,14 @@
 #! /usr/bin/python3
 
+from threading import Thread, Event
+import configparser
+import signal
+
+from RPi import GPIO
+from src.commonFunctions import fatal
 from src.telegraph import client
 from src.telegraph import server
-from src.commonFunctions import fatal
-import configparser
 import setup
-import signal
-from RPi import GPIO
-from threading import Thread, Event
 
 
 config = configparser.ConfigParser()

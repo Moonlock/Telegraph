@@ -1,4 +1,5 @@
 import configparser
+
 from setup import CONTACTS_FILE, GROUPS_FILE
 from src.commonFunctions import toMorse, writeConfig
 from src.telegraph.destination import Contact, Group

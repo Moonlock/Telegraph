@@ -1,11 +1,11 @@
-from src.symbols import Symbol
-from src.commonFunctions import debug, fatal
-
-from RPi import GPIO
+from os import remove
 from subprocess import Popen
 import socket
-import sys
-from os import remove
+
+from RPi import GPIO
+from src.commonFunctions import debug, fatal
+from src.symbols import Symbol
+
 
 LED_CHANNEL = 16
 PLAY_BUTTON_CHANNEL = 20

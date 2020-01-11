@@ -1,14 +1,14 @@
-import difflib
-import random
-import subprocess
-import sys
-import signal
-
-from src.learnMorse.alphabet import morse
-from src.learnMorse import users
-from src.symbols import Symbol
 from threading import Timer
 from time import sleep
+import difflib
+import random
+import signal
+import subprocess
+import sys
+
+from src.learnMorse import users
+from src.learnMorse.alphabet import morse
+from src.symbols import Symbol
 
 
 COUNTS_PER_WORD = 50
