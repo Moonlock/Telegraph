@@ -1,13 +1,10 @@
 #! /usr/bin/python3
 
 import configparser
-import sys
+
+from src.commonFunctions import fatal, writeConfig
 
 USERS_FILE = 'src/learnMorse/users.ini'
-
-def error(message):
-	print(message)
-	sys.exit()
 
 def createNewUser(config):
 	print("Creating new user.")
@@ -21,11 +18,7 @@ def createNewUser(config):
 	print("")
 
 	config[username] = userConfig
-	try:
-		with open(USERS_FILE, 'w') as configFile:
-			config.write(configFile)
-	except IOError:
-		error("Failed to update users file.")
+	writeConfig(USERS_FILE, config)
 
 	return (username, userConfig)
 
@@ -33,7 +26,7 @@ def increaseCharacters(user):
 	config = configparser.ConfigParser()
 	config.read(USERS_FILE)
 	if not config.has_section(user):
-		error("Failed to update user file: User " + user + " does not exist.")
+		fatal("Failed to update user file: User " + user + " does not exist.")
 
 	numChars = config.getint(user, "Characters")
 	if(numChars == 36):
@@ -43,11 +36,7 @@ def increaseCharacters(user):
 
 	print("Increasing number of characters.")
 	config[user]["Characters"] = str(numChars)
-	try:
-		with open(USERS_FILE, 'w') as configFile:
-			config.write(configFile)
-	except IOError:
-		error("Failed to update users file.")
+	writeConfig(USERS_FILE, config)
 
 	print("Number of characters is now " + str(numChars))
 
@@ -71,9 +60,9 @@ def getUserData():
 	try:
 		userNum = int(selection)
 	except IOError:
-		error("Invalid selection.")
+		fatal("Invalid selection.")
 	if userNum < 0 or userNum >= i:
-		error("Invalid selection.")
+		fatal("Invalid selection.")
 
 	user = sections[userNum]
 	return (user, config[user])

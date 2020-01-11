@@ -13,7 +13,7 @@ def debug(message):
 	if dbgEnabled:
 		print(message)
 
-def fatal(message):
+def fatal(message=""):
 	print(message)
 	sys.exit()
 
@@ -34,4 +34,4 @@ def writeConfig(filename, parser):
 	except IOError:
 		fatal("Failed to update " + filename + ".")
 
-	print("Successfully updated " + filename + ".")
+	print("Updated " + filename + ".")

@@ -4,8 +4,9 @@ import configparser
 import os.path
 import sys
 
+from src.commonFunctions import writeConfig
+
 CONFIG_FILE = 'resources/config.ini'
-DEST_FILE = 'resources/addresses.ini'
 CONTACTS_FILE = 'resources/contacts.ini'
 GROUPS_FILE = 'resources/groups.ini'
 
@@ -39,12 +40,7 @@ def main():
 	config['Server'] = serverConfig
 	config['Client'] = clientConfig
 	config['Common'] = commonConfig
-	try:
-		with open(CONFIG_FILE, 'w') as configFile:
-			config.write(configFile)
-			print('Setup complete.')
-	except IOError:
-		print("Failed to create configuration file.")
+	writeConfig(CONFIG_FILE, config)
 
 	if multiDest:
 		print("")

@@ -1,13 +1,13 @@
-import configparser
 import socket
 import sys
 
 from math import ceil
 from RPi import GPIO
-from time import time, sleep
+from time import time
 
 from src.symbols import Symbol
-import setup
+from src.telegraph.destinationConfig import DestinationConfig
+from src.commonFunctions import debug, fatal
 
 KEY_CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
@@ -16,9 +16,7 @@ END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
 
-	def __init__(self, multiDest, serv, servPort, killed, debug):
-		self.dbgEnabled = debug
-
+	def __init__(self, multiDest, serv, servPort, killed):
 		self.multiDest = multiDest
 		self.waitingForDest = multiDest
 		if multiDest:
@@ -32,8 +30,7 @@ class Client:
 		self.lastRelease = 0
 		self.timeUnit = 0
 
-		self.destinations = configparser.ConfigParser()
-		self.destinations.read(setup.DEST_FILE)
+		self.destConfig = DestinationConfig(self.callSignError)
 
 		self.callback = self.initCallback
 		self.setUpCallback()
@@ -47,20 +44,16 @@ class Client:
 		GPIO.setup(KEY_CHANNEL, GPIO.IN)
 		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=innerCallback, bouncetime=20)
 
-	def debug(self, message):
-		if self.dbgEnabled:
-			print(message)
-
 	def timePress(self):
 		self.lastRelease = time()
 		pressTime = (self.lastRelease - self.lastPress) * 1000
-		self.debug("Press: " + str(int(pressTime)))
+		debug("Press: " + str(int(pressTime)))
 		return pressTime
 
 	def timeRelease(self):
 		self.lastPress = time()
 		releaseTime = (self.lastPress - self.lastRelease) * 1000
-		self.debug("Release: " + str(int(releaseTime)))
+		debug("Release: " + str(int(releaseTime)))
 		return releaseTime
 
 	def initCallback(self, channel):
@@ -94,7 +87,7 @@ class Client:
 
 		self.timeUnit = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
 		self.initTimings.clear()
-		self.debug("Starting")
+		debug("Starting")
 		self.startMessage()
 
 
@@ -149,42 +142,20 @@ class Client:
 		end = destBounds[1]
 		sign = self.message[start : end]
 
-		dests = self.getDestsFromSign(sign)
-		if not dests:
-			self.callSignError("Call sign not found")
-			return
+		dest = self.destConfig.createDestination(sign)
+		debug("Sending to " + dest.toString() + ".")
 
 		self.waitingForDest = False
-		return dests
-
-	def getDestsFromSign(self, sign):
-		signString = "".join([str(int(symbol)) for symbol in sign])
-		if not self.destinations.has_section(signString):
-			return None
-
-		config = self.destinations[signString]
-		dests = []
-		if config.getboolean("Group"):
-			memberList = []
-			for member in config["Members"]:
-				memberConfig = self.destinations[member]
-				memberList.append(memberConfig["Name"])
-				dests.append((memberConfig["Address"], memberConfig["Port"]))
-			self.debug("Sending to " + config["Name"] + ": " + ", ".join(memberList) + ".")
-		else:
-			self.debug("Sending to " + config["Name"] + ".")
-			dests.append((config["Address"], config["Port"]))
-
-		return dests
+		return dest.getEndpoints()
 
 	def callSignError(self, message):
-		self.debug(message + ": Canceling message.")
+		debug(message + ": Canceling message.")
 		self.message.clear()
 		self.callback = self.initCallback
 
 	def checkFinish(self):
 		if self.message[-5:] == END_MESSAGE:
-			self.debug("Sending message.")
+			debug("Sending message.")
 			self.sendMessage()
 			if self.multiDest:
 				self.waitingForDest = True
@@ -205,8 +176,7 @@ class Client:
 			sock.connect((server, int(port)))
 			return sock
 		except socket.error as e:
-			print("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
-			sys.exit()
+			fatal("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
 
 	def createMessage(self):
 		messageData = 0
@@ -220,5 +190,4 @@ class Client:
 		try:
 			sock.sendall(message)
 		except socket.error as e:
-			print("Failed to send message.  {}: {}".format(e.errno, e.strerror))
-			sys.exit()
+			fatal("Failed to send message.  {}: {}".format(e.errno, e.strerror))

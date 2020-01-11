@@ -1,6 +1,6 @@
 from src.symbols import Symbol
+from src.commonFunctions import debug, fatal
 
-from collections import deque
 from RPi import GPIO
 from subprocess import Popen
 import socket
@@ -23,9 +23,7 @@ INIT_SPACE_FILE = SOUND_FILES_PATH + "init_space.sox"
 
 class Server:
 
-	def __init__(self, port, wpm, killed, debug):
-		self.dbgEnabled = debug
-
+	def __init__(self, port, wpm, killed):
 		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
 		self.createAudioFiles(timeUnit)
 
@@ -54,8 +52,7 @@ class Server:
 			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.sock.bind(('', int(port)))
 		except socket.error as e:
-			print("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
-			sys.exit()
+			fatal("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
 
 		self.sock.listen(10)
 
@@ -64,14 +61,10 @@ class Server:
 				conn, addr = self.sock.accept()
 				data = conn.recv(1024)
 				conn.close()
-				self.debug("Received message from " + str(addr))
+				debug("Received message from " + str(addr))
 				self.handleMessage(data)
 			except socket.timeout:
 				continue
-
-	def debug(self, message):
-		if self.dbgEnabled:
-			print(message)
 
 	def createAudioFiles(self, timeUnit):
 		Popen(['sox', '-n', DIT_FILE, 'synth', timeUnit, 'sin', '900'])
@@ -88,7 +81,7 @@ class Server:
 
 		self.nextMessage += 1
 		GPIO.output(LED_CHANNEL, GPIO.HIGH)
-		self.debug("LED on.")
+		debug("LED on.")
 
 	def createMessageFile(self, msg):
 		prevIsChar = False
@@ -120,17 +113,17 @@ class Server:
 		return symbols
 
 	def playMessage(self, channel):
-		self.debug("Play message.")
+		debug("Play message.")
 		if self.curMessage < self.nextMessage:
 			Popen(['play', '-q', "{}.sox".format(self.curMessage)])
 
 	def deleteMessage(self, channel):
-		self.debug("delete message.")
+		debug("delete message.")
 		if self.curMessage < self.nextMessage:
 			remove("{}.sox".format(self.curMessage))
 			self.curMessage += 1
 
 			if self.curMessage == self.nextMessage:
 				GPIO.output(LED_CHANNEL, GPIO.LOW)
-				self.debug("LED off.")
+				debug("LED off.")
 

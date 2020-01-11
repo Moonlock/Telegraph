@@ -2,7 +2,7 @@
 
 from src.telegraph.destinationConfig import DestinationConfig
 from src.telegraph.destination import Group
-from src.telegraphFunctions import toMorse
+from src.commonFunctions import toMorse, fatal
 import setup
 
 import configparser
@@ -13,12 +13,7 @@ import sys
 
 # TODO: Check for duplicate call signs when creating/updating.
 
-def error(message):
-	print(message)
-	sys.exit()
-
-
-destConfig = DestinationConfig(True, error)
+destConfig = DestinationConfig(fatal)
 
 def main():
 	config = configparser.ConfigParser()
@@ -174,9 +169,9 @@ def getConfigFromSelection(selection, idToConfigMap):
 	try:
 		userNum = int(selection)
 	except ValueError:
-		error("Invalid selection.")
+		fatal("Invalid selection.")
 	if userNum < 0 or userNum >= len(idToConfigMap):
-		error("Invalid selection.")
+		fatal("Invalid selection.")
 
 	return idToConfigMap[userNum]
 
