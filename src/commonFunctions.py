@@ -1,13 +1,13 @@
 import configparser
 import sys
 
+from src import constants
 from src.learnMorse.alphabet import morse
 from src.symbols import Symbol
-import setup
 
 
 config = configparser.ConfigParser()
-config.read(setup.CONFIG_FILE)
+config.read(constants.CONFIG_FILE)
 dbgEnabled = config['Common'].getboolean('Debug')
 
 def debug(message):

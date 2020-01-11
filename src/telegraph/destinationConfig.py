@@ -1,6 +1,6 @@
 import configparser
 
-from setup import CONTACTS_FILE, GROUPS_FILE
+from src import constants
 from src.commonFunctions import toMorse, writeConfig
 from src.telegraph.destination import Contact, Group
 
@@ -9,9 +9,9 @@ class DestinationConfig:
 
 	def __init__(self, errorCallback):
 		self.contactsConfig = configparser.ConfigParser()
-		self.contactsConfig.read(CONTACTS_FILE)
+		self.contactsConfig.read(constants.CONTACTS_FILE)
 		self.groupsConfig = configparser.ConfigParser()
-		self.groupsConfig.read(GROUPS_FILE)
+		self.groupsConfig.read(constants.GROUPS_FILE)
 
 		self.errorCallback = errorCallback
 
@@ -33,11 +33,11 @@ class DestinationConfig:
 
 	def addContact(self, newContact):
 		self.contactsConfig[toMorse(newContact["Sign"])] = newContact
-		writeConfig(CONTACTS_FILE, self.contactsConfig)
+		writeConfig(constants.CONTACTS_FILE, self.contactsConfig)
 
 	def addGroup(self, newGroup):
 		self.groupsConfig[toMorse(newGroup["Sign"])] = newGroup
-		writeConfig(GROUPS_FILE, self.groupsConfig)
+		writeConfig(constants.GROUPS_FILE, self.groupsConfig)
 
 
 

@@ -1,4 +1,4 @@
-from setup import CONTACTS_FILE, GROUPS_FILE
+from src import constants
 from src.commonFunctions import toMorse, writeConfig
 
 
@@ -47,7 +47,7 @@ class Contact(Destination):
 		if newConfig is not None:
 			self.contactsConfig[toMorse(newConfig["Sign"])] = newConfig
 
-		writeConfig(CONTACTS_FILE, self.contactsConfig)
+		writeConfig(constants.CONTACTS_FILE, self.contactsConfig)
 
 	def _parseConfig(self):
 		signString = "".join([str(int(symbol)) for symbol in self.callsign])
@@ -58,7 +58,7 @@ class Contact(Destination):
 
 class Group(Destination):
 
-	def __init__(self, callsign, errorCallback, dbgEnabled, contactsConfig, groupsConfig):
+	def __init__(self, callsign, errorCallback, contactsConfig, groupsConfig):
 		Destination.__init__(self, callsign, errorCallback, contactsConfig)
 
 		self.groupsConfig = groupsConfig
@@ -75,7 +75,7 @@ class Group(Destination):
 		if newConfig is not None:
 			self.groupsConfig[toMorse(newConfig["Sign"])] = newConfig
 
-		writeConfig(GROUPS_FILE, self.groupsConfig)
+		writeConfig(constants.GROUPS_FILE, self.groupsConfig)
 
 	def _parseConfig(self):
 		signString = "".join([str(int(symbol)) for symbol in self.callsign])
@@ -87,5 +87,5 @@ class Group(Destination):
 				print("Group member not found; continuing.")
 				continue
 			memberConfig = self.contactsConfig[member]
-			self.members.append(Contact(member, self.errorCallback, self.dbgEnabled, self.contactsConfig))
+			self.members.append(Contact(member, self.errorCallback, self.contactsConfig))
 			self.endpoints.append((memberConfig["Address"], memberConfig["Port"]))

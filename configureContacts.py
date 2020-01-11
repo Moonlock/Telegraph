@@ -3,10 +3,10 @@
 import configparser
 import sys
 
+from src import constants
 from src.commonFunctions import toMorse, fatal
 from src.telegraph.destination import Group
 from src.telegraph.destinationConfig import DestinationConfig
-import setup
 
 
 # TODO: Removing a contact or changing their call sign will cause an error
@@ -16,7 +16,7 @@ destConfig = DestinationConfig(fatal)
 
 def main():
 	config = configparser.ConfigParser()
-	config.read(setup.CONFIG_FILE)
+	config.read(constants.CONFIG_FILE)
 	if config.sections() and not config['Client'].getboolean('Multiple Destinations'):
 		print()
 		print('Warning: Multiple destinations is disabled- contacts and groups will be ignored.')

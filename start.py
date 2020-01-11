@@ -5,6 +5,7 @@ import configparser
 import signal
 
 from RPi import GPIO
+from src import constants
 from src.commonFunctions import fatal
 from src.telegraph import client
 from src.telegraph import server
@@ -12,11 +13,11 @@ import setup
 
 
 config = configparser.ConfigParser()
-config.read(setup.CONFIG_FILE)
+config.read(constants.CONFIG_FILE)
 if not config.sections():
 	print('Running setup script.')
 	setup.main()
-	config.read(setup.CONFIG_FILE)
+	config.read(constants.CONFIG_FILE)
 	if not config.sections():
 		fatal("Error reading config file.")
 
