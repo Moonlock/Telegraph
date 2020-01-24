@@ -1,10 +1,11 @@
 from src import constants
-from src.commonFunctions import toMorse, writeConfig
+from src.commonFunctions import toMorse
 
 
 class Destination:
 
-	def __init__(self, callsign, errorCallback, contactsConfig):
+	def __init__(self, callsign, errorCallback, contactsConfig, updater):
+		self.updater = updater
 		self.contactsConfig = contactsConfig
 
 		self.callsign = callsign
@@ -26,8 +27,8 @@ class Destination:
 
 class Contact(Destination):
 
-	def __init__(self, callsign, errorCallback, contactsConfig):
-		Destination.__init__(self, callsign, errorCallback, contactsConfig)
+	def __init__(self, callsign, errorCallback, contactsConfig, updater):
+		Destination.__init__(self, callsign, errorCallback, contactsConfig, updater)
 		self._parseConfig()
 
 	def getAddress(self):
@@ -43,11 +44,7 @@ class Contact(Destination):
 		return self.getName()
 
 	def update(self, newConfig):
-		self.contactsConfig.remove_section(self.callsign)
-		if newConfig is not None:
-			self.contactsConfig[toMorse(newConfig["Sign"])] = newConfig
-
-		writeConfig(constants.CONTACTS_FILE, self.contactsConfig)
+		self.updater.updateConfig(self.callsign, newConfig)
 
 	def _parseConfig(self):
 		signString = "".join([str(int(symbol)) for symbol in self.callsign])
@@ -58,8 +55,8 @@ class Contact(Destination):
 
 class Group(Destination):
 
-	def __init__(self, callsign, errorCallback, contactsConfig, groupsConfig):
-		Destination.__init__(self, callsign, errorCallback, contactsConfig)
+	def __init__(self, callsign, errorCallback, contactsConfig, groupsConfig, updater):
+		Destination.__init__(self, callsign, errorCallback, contactsConfig, updater)
 
 		self.groupsConfig = groupsConfig
 		self._parseConfig()
@@ -71,21 +68,17 @@ class Group(Destination):
 		return self.getName() + ": " + ", ".join([member.getName() for member in self.members])
 
 	def update(self, newConfig):
-		self.groupsConfig.remove_section(self.callsign)
-		if newConfig is not None:
-			self.groupsConfig[toMorse(newConfig["Sign"])] = newConfig
-
-		writeConfig(constants.GROUPS_FILE, self.groupsConfig)
+		self.updater.updateGroup(self.callsign, newConfig)
 
 	def _parseConfig(self):
 		signString = "".join([str(int(symbol)) for symbol in self.callsign])
 
 		self.config = self.groupsConfig[signString]
 
-		for member in self.config["Members"].split():
+		for member in self.config["Members"].split(' '):
 			if not self.contactsConfig.has_section(member):
 				print("Group member not found; continuing.")
 				continue
 			memberConfig = self.contactsConfig[member]
-			self.members.append(Contact(member, self.errorCallback, self.contactsConfig))
+			self.members.append(Contact(member, self.errorCallback, self.contactsConfig, self.updater))
 			self.endpoints.append((memberConfig["Address"], memberConfig["Port"]))
