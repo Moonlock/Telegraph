@@ -15,7 +15,7 @@ END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
 
-	def __init__(self, multiDest, serv, servPort, killed):
+	def __init__(self, multiDest, serv, servPort, killed, isTest=False):
 		self.multiDest = multiDest
 		self.waitingForDest = multiDest
 		if multiDest:
@@ -34,7 +34,8 @@ class Client:
 		self.callback = self.initCallback
 		self.setUpCallback()
 
-		killed.wait()
+		if not isTest:
+			killed.wait()
 
 	def setUpCallback(self):
 		def innerCallback(channel):
@@ -142,6 +143,9 @@ class Client:
 		sign = self.message[start : end]
 
 		dest = self.destConfig.createDestination(sign)
+		if dest is None:
+			return []
+
 		debug("Sending to " + dest.toString() + ".")
 
 		self.waitingForDest = False

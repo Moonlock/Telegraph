@@ -93,10 +93,10 @@ def displayMenu(contacts, groups):
 def createNewContact(oldContact=None):
 
 	contactConfig = {}
-	contactConfig["Name"] = input("Name")
-	contactConfig["Sign"] = input("Call sign").upper()
-	contactConfig["Address"] = input("IP Address")
-	contactConfig["Port"] = input("Port")
+	contactConfig["Name"] = input("Name: ")
+	contactConfig["Sign"] = input("Call sign: ").upper()
+	contactConfig["Address"] = input("IP Address: ")
+	contactConfig["Port"] = input("Port: ")
 	print("")
 
 	return contactConfig
