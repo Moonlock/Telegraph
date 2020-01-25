@@ -1,6 +1,7 @@
 from unittest import mock
 import unittest
 
+from RPi import GPIO
 from src.symbols import Symbol as s
 from src.telegraph.client import Client
 from src.telegraph.destinationConfig import DestinationConfig
@@ -20,6 +21,9 @@ class TestSingleDestination(unittest.TestCase):
 
 	def setUp(self):
 		self.client = Client(False, '1.1.1.1', '8000', None, True)
+
+	def tearDown(self):
+            GPIO.cleanup()
 
 
 	@mock.patch('src.telegraph.client.time')
@@ -45,7 +49,7 @@ class TestSingleDestination(unittest.TestCase):
 		inputSequence(end, self.client.handlePress, self.client.handleRelease, mock_time)
 
 		instance = mock_socket.socket.return_value
-		instance.connect.assert_called_with(('1.1.1.1', '8000'))
+		instance.connect.assert_called_with(('1.1.1.1', 8000))
 		self.assertTrue(instance.sendall.called)
 
 
@@ -58,6 +62,9 @@ class TestMultipleDestinations(unittest.TestCase):
 
 		self.moonlockEndpoint = ('1.1.1.1', '8000')
 		self.muskratEndpoint = ('2.2.2.2', '8001')
+
+	def tearDown(self):
+            GPIO.cleanup()
 
 
 	@mock.patch('src.telegraph.client.time')
