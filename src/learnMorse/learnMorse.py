@@ -1,11 +1,10 @@
-from subprocess import Popen
-from threading import Timer
+from subprocess import Popen, call
 from time import sleep
 import difflib
+import glob
 import os
 import random
 import signal
-import subprocess
 import sys
 
 from src.learnMorse import users
@@ -22,8 +21,6 @@ DAH_FILE = SOUND_FILES_PATH + "learnMorse-dah.sox"
 SYMBOL_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-symbol.sox"
 CHAR_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-char.sox"
 WORD_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-word.sox"
-TEST_FILE = SOUND_FILES_PATH + "learnMorse-test.sox"
-CREATED_FILES = [DIT_FILE, DAH_FILE, SYMBOL_SPACE_FILE, CHAR_SPACE_FILE, WORD_SPACE_FILE, TEST_FILE]
 
 
 class morseTest:
@@ -49,51 +46,31 @@ class morseTest:
 		self.wordSpace = 7*totalDelay / 19 - self.symbolSpace
 
 		Popen(['sox', '-n', SYMBOL_SPACE_FILE, 'trim', '0', str(self.symbolSpace)])
-		Popen(['sox', '-n', CHAR_SPACE_FILE, 'trim', '0', str(3*self.charSpace)])
-		Popen(['sox', '-n', WORD_SPACE_FILE, 'trim', '0', str(7*self.wordSpace)])
+		Popen(['sox', '-n', CHAR_SPACE_FILE, 'trim', '0', str(self.charSpace)])
+		Popen(['sox', '-n', WORD_SPACE_FILE, 'trim', '0', str(self.wordSpace)])
 
 		self.chars = []
 		for _ in range(numChars):
 			self.chars.append(morse.popitem(0))
 
-#		self.timer = Timer(testTime, self.stopTest)
 		self.testTime = testTime
 
 		sleep(2)
-#		self.running = True
-#		self.timer.start()
 		self.startTest()
 
 	def handleSigInt(self, sig, frame):
-		self.timer.cancel()
-
-		for file in CREATED_FILES:
-			if os.path.exists(file):
-				os.remove(file)
-
+		self.deleteFiles()
 		sys.exit()
 
-	def playDit(self):
-		subprocess.call(["play", '-q', DIT_FILE])
-		sleep(self.symbolSpace*2)
-
-	def playDah(self):
-		subprocess.call(["play", '-q', DAH_FILE])
-		sleep(self.symbolSpace*4)
-
-	def playCharSpace(self):
-		sleep(self.charSpace)
-
-	def playWordSpace(self):
-		self.masterList.append(' ')
-		sleep(self.wordSpace)
+	def deleteFiles(self):
+		files = glob.glob(SOUND_FILES_PATH + "learnMorse-*.sox")
+		for file in files:
+			try:
+				os.remove(file)
+			except:
+				print("Failed to delete " + file)
 
 	def startTest(self):
-
-		play = {
-			Symbol.DIT: self.playDit,
-			Symbol.DAH: self.playDah,
-		}
 
 		print("Enter what you hear:")
 		print(" > ", end="")
@@ -124,13 +101,11 @@ class morseTest:
 
 			fileList.append(WORD_SPACE_FILE)
 			timeSpent += self.wordSpace
+			self.masterList.append(' ')
 
-		filename = "{}.sox".format(SOUND_FILES_PATH + "test")
-		command = ['sox']
-		command.extend(fileList)
-		command.append(filename)
-		Popen(command)
-		Popen(['play', '-q', filename])
+		testFile = self.createFile(fileList)
+		Popen(['play', '-q', testFile])
+		self.deleteFiles()
 
 		#Remove final word space
 		self.masterList.pop()
@@ -147,6 +122,25 @@ class morseTest:
 		print("Score: " + str(score) + "%")
 		if score >= 90:
 			users.increaseCharacters(self.user)
+
+	def createFile(self, fileList):
+		partialFile = ""
+		for i in range((len(fileList) + 999) // 1000):
+			start = i * 1000
+			end = (i+1) * 1000
+
+			oldPartialFile = partialFile
+			partialFile = SOUND_FILES_PATH + "learnMorse-{}.sox".format(i)
+			files = fileList[start:end]
+
+			command = ['sox']
+			if oldPartialFile:
+				command.append(oldPartialFile)
+			command.extend(files)
+			command.append(partialFile)
+			call(command)
+
+		return partialFile
 
 	def stopTest(self):
 		self.running = False
