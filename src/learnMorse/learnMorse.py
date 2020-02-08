@@ -1,26 +1,26 @@
-from subprocess import Popen, call
+from subprocess import Popen
 from time import sleep
 import difflib
-import glob
-import os
 import random
 import signal
 import sys
 
+from src.constants import SOUND_FILES_PATH
 from src.learnMorse import users
 from src.learnMorse.alphabet import morse
 from src.symbols import Symbol
+import src.commonFunctions as common
 
 
 COUNTS_PER_WORD = 50
 SECONDS_PER_MINUTE = 60
 
-SOUND_FILES_PATH = "resources/sounds/"
 DIT_FILE = SOUND_FILES_PATH + "learnMorse-dit.sox"
 DAH_FILE = SOUND_FILES_PATH + "learnMorse-dah.sox"
 SYMBOL_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-symbol.sox"
 CHAR_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-char.sox"
 WORD_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-word.sox"
+TEST_FILE = SOUND_FILES_PATH + "learnMorse-test.sox"
 
 
 class morseTest:
@@ -59,16 +59,9 @@ class morseTest:
 		self.startTest()
 
 	def handleSigInt(self, sig, frame):
-		self.deleteFiles()
+		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
+		common.deleteFiles(SOUND_FILES_PATH, "temp-", ".sox")
 		sys.exit()
-
-	def deleteFiles(self):
-		files = glob.glob(SOUND_FILES_PATH + "learnMorse-*.sox")
-		for file in files:
-			try:
-				os.remove(file)
-			except:
-				print("Failed to delete " + file)
 
 	def startTest(self):
 
@@ -103,9 +96,8 @@ class morseTest:
 			timeSpent += self.wordSpace
 			self.masterList.append(' ')
 
-		testFile = self.createFile(fileList)
-		Popen(['play', '-q', testFile])
-		self.deleteFiles()
+		common.createFile(fileList, TEST_FILE)
+		Popen(['play', '-q', TEST_FILE])
 
 		#Remove final word space
 		self.masterList.pop()
@@ -115,6 +107,8 @@ class morseTest:
 		print("   " + master)
 		self.checkAnswer(response.upper(), master)
 
+		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
+
 	def checkAnswer(self, response, master):
 		diff = difflib.SequenceMatcher(None, master, response, autojunk=False)
 		score = diff.ratio() * 100
@@ -123,24 +117,3 @@ class morseTest:
 		if score >= 90:
 			users.increaseCharacters(self.user)
 
-	def createFile(self, fileList):
-		partialFile = ""
-		for i in range((len(fileList) + 999) // 1000):
-			start = i * 1000
-			end = (i+1) * 1000
-
-			oldPartialFile = partialFile
-			partialFile = SOUND_FILES_PATH + "learnMorse-{}.sox".format(i)
-			files = fileList[start:end]
-
-			command = ['sox']
-			if oldPartialFile:
-				command.append(oldPartialFile)
-			command.extend(files)
-			command.append(partialFile)
-			call(command)
-
-		return partialFile
-
-	def stopTest(self):
-		self.running = False
