@@ -8,7 +8,6 @@ from pynput import keyboard
 from src.commonFunctions import debug, fatal
 from src.symbols import Symbol
 from src.telegraph.destinationConfig import DestinationConfig
-from src.telegraph.keyboardListener import KeyboardListener
 import termios
 
 
@@ -20,7 +19,7 @@ END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
 
-	def __init__(self, multiDest, serv, servPort, killed, isTest=False):
+	def __init__(self, multiDest, serv, servPort, listener, killed, isTest=False):
 		self.multiDest = multiDest
 		self.waitingForDest = multiDest
 		if multiDest:
@@ -41,7 +40,8 @@ class Client:
 		self.pressCallback = self.initHandlePress
 		self.releaseCallback = self.initHandleRelease
 #		self.setUpCallback()
-		self.listener = KeyboardListener(self.initHandlePress, self.initHandleRelease)
+		self.listener = listener
+		self.listener.resetClientCallback(self.initCallback, self.initHandlePress, self.initHandleRelease)
 
 		if not isTest:
 			killed.wait()
@@ -127,7 +127,7 @@ class Client:
 	def startMessage(self):
 		print("Start")
 		self.addInitialization()
-		self.listener.resetCallback(self.messageCallback, self.handlePress, self.handleRelease)
+		self.listener.resetClientCallback(self.messageCallback, self.handlePress, self.handleRelease)
 #		self.callback = self.messageCallback
 #		self.pressCallback = self.handlePress
 #		self.releaseCallback = self.handleRelease
@@ -192,7 +192,7 @@ class Client:
 	def callSignError(self, message):
 		debug(message + ": Canceling message.")
 		self.message.clear()
-		self.listener.resetCallback(self.initCallback, self.initHandlePress, self.initHandleRelease)
+		self.listener.resetClientCallback(self.initCallback, self.initHandlePress, self.initHandleRelease)
 #		self.callback = self.initCallback
 #		self.pressCallback = self.initHandlePress
 #		self.releaseCallback = self.initHandleRelease
@@ -205,7 +205,7 @@ class Client:
 				self.waitingForDest = True
 				self.dests = None
 
-			self.listener.resetCallback(self.initCallback, self.initHandlePress, self.initHandleRelease)
+			self.listener.resetClientCallback(self.initCallback, self.initHandlePress, self.initHandleRelease)
 #			self.callback = self.initCallback
 #			self.pressCallback = self.initHandlePress
 #			self.releaseCallback = self.initHandleRelease

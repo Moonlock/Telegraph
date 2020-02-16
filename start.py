@@ -4,14 +4,15 @@ from threading import Thread, Event
 import configparser
 import signal
 
-#from RPi import GPIO
 from src import constants
 from src.commonFunctions import fatal
 from src.telegraph import client
-#from src.telegraph import server
+from src.telegraph import server
+from src.telegraph.keyboardListener import KeyboardListener
 import setup
 
 
+#from RPi import GPIO
 config = configparser.ConfigParser()
 config.read(constants.CONFIG_FILE)
 if not config.sections():
@@ -32,20 +33,22 @@ else:
 	serverAddress = clientConfig['Address']
 	serverPort = clientConfig['Port']
 
-clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, killed))
+listener = KeyboardListener()
+
+clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, killed))
 clientThread.start()
 
 serverConfig = config['Server']
 listenPort = serverConfig['Port']
 wpm = int(serverConfig['WPM'])
 
-#serverThread = Thread(target=server.Server, args=(listenPort, wpm, killed))
-#serverThread.start()
+serverThread = Thread(target=server.Server, args=(listenPort, wpm, listener, killed))
+serverThread.start()
 
 def handleSigInt(sig, frame):
 	killed.set()
 	clientThread.join()
-#	serverThread.join()
+	serverThread.join()
 #	GPIO.cleanup()
 
 signal.signal(signal.SIGINT, handleSigInt)

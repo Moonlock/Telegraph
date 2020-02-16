@@ -3,15 +3,16 @@ import signal
 import sys
 
 from pynput import keyboard
+import src.commonFunctions as common
 
 import termios
 
 
 class KeyboardListener:
 
-	def __init__(self, pressCallback, releaseCallback):
-		self.pressCallback = pressCallback
-		self.releaseCallback = releaseCallback
+	def __init__(self):
+		self.pressCallback = lambda: common.fatal("Press callback not defined.")
+		self.releaseCallback = lambda: common.fatal("Release callback not defined.")
 		self.ctrlPressed = False
 		self.pressed = False
 
@@ -35,6 +36,11 @@ class KeyboardListener:
 				self.pressed = False
 				self.releaseCallback()
 
+			if key == keyboard.Key.enter:
+				self.server.playMessage()
+			if key == keyboard.Key.delete:
+				self.server.deleteMessage()
+
 			if key == keyboard.Key.ctrl:
 				self.ctrlPressed = False
 
@@ -45,9 +51,12 @@ class KeyboardListener:
 		listener = keyboard.Listener(on_press=innerPressCallback, on_release=innerReleaseCallback)
 		listener.start()
 
-	def resetCallback(self, gpioCallback=None, pressCallback=None, releaseCallback=None):
+	def resetClientCallback(self, gpioCallback=None, pressCallback=None, releaseCallback=None):
 		self.pressCallback = pressCallback
 		self.releaseCallback = releaseCallback
+
+	def setServer(self, server):
+		self.server = server
 
 	def cleanUp(self):
 		termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self.oldSettings)
