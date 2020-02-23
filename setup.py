@@ -5,7 +5,6 @@ import os.path
 import sys
 
 from src import constants
-from src.commonFunctions import writeConfig
 
 
 def main():
@@ -40,8 +39,10 @@ def main():
 		if not multiDest:
 			clientConfig['Address'] = input('Remote IP address/hostname [localhost]: ') or 'localhost'
 			clientConfig['Port'] = input('Remote port [8000]: ') or 8000
+
 		debug = input('Enable debug info [y/N]: ') or 'n'
 		commonConfig['Debug'] = debug.lower() == 'y'
+		commonConfig['Version'] = constants.CONFIG_FILE_VERSION
 
 	except KeyboardInterrupt:
 		sys.exit()
@@ -50,7 +51,13 @@ def main():
 	config['Server'] = serverConfig
 	config['Client'] = clientConfig
 	config['Common'] = commonConfig
-	writeConfig(constants.CONFIG_FILE, config)
+
+	try:
+		with open(constants.CONFIG_FILE, 'w') as configFile:
+			config.write(configFile)
+	except IOError:
+		print("Error: Failed to update " + constants.CONFIG_FILE + ".")
+		sys.exit()
 
 	if multiDest:
 		print("")

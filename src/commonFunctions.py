@@ -6,9 +6,14 @@ from src.learnMorse.alphabet import morse
 from src.symbols import Symbol
 
 
-config = configparser.ConfigParser()
-config.read(constants.CONFIG_FILE)
-dbgEnabled = config['Common'].getboolean('Debug')
+try:
+	config = configparser.ConfigParser()
+	config.read(constants.CONFIG_FILE)
+	dbgEnabled = config['Common'].getboolean('Debug')
+except KeyError:
+	print("Error reading config file.")
+	sys.exit()
+
 
 def debug(message):
 	if dbgEnabled:
@@ -35,4 +40,5 @@ def writeConfig(filename, parser):
 	except IOError:
 		fatal("Failed to update " + filename + ".")
 
-	print("Updated " + filename + ".")
+	debug("Updated " + filename + ".")
+

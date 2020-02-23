@@ -9,17 +9,14 @@ from src import constants
 from src.commonFunctions import fatal
 from src.telegraph import client
 from src.telegraph import server
-import setup
 
 
 config = configparser.ConfigParser()
 config.read(constants.CONFIG_FILE)
 if not config.sections():
-	print('Running setup script.')
-	setup.main()
-	config.read(constants.CONFIG_FILE)
-	if not config.sections():
-		fatal("Error reading config file.")
+	fatal("Error reading config file.")
+if config['Common'].getint('Version') != constants.CONFIG_FILE_VERSION:
+	fatal("Config file version mismatch; please recreate.")
 
 killed = Event()
 
