@@ -1,9 +1,6 @@
 from math import ceil
 from time import time
 import socket
-import sys
-
-from pynput import keyboard
 
 from src.commonFunctions import debug, fatal
 from src.symbols import Symbol
@@ -11,8 +8,6 @@ from src.telegraph.destinationConfig import DestinationConfig
 import termios
 
 
-#from RPi import GPIO
-KEY_CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
 INIT_MESSAGE_SYMBOL_LENGTH = 6	# Includes word space following init message
 END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
@@ -36,45 +31,14 @@ class Client:
 
 		self.destConfig = DestinationConfig(self.callSignError)
 
-		self.callback = self.initCallback
 		self.pressCallback = self.initHandlePress
 		self.releaseCallback = self.initHandleRelease
-#		self.setUpCallback()
 		self.listener = listener
-		self.listener.resetClientCallback(self.initCallback, self.initHandlePress, self.initHandleRelease)
+		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
 		if not isTest:
 			killed.wait()
 		self.listener.cleanUp()
-
-	def setUpCallback(self):
-		def innerCallback(channel):
-			self.callback(channel)
-		def innerPressCallback(key):
-			if not self.pressed:
-				self.pressed = True
-				self.pressCallback()
-			if key == keyboard.Key.esc:
-				return False
-		def innerReleaseCallback(key):
-			self.pressed = False
-			self.releaseCallback()
-
-		fd = sys.stdin.fileno()
-		old_settings = termios.tcgetattr(fd)
-		new = termios.tcgetattr(fd)
-		new[3] = new[3] & ~termios.ECHO
-		try:
-			termios.tcsetattr(fd, termios.TCSADRAIN, new)
-			with keyboard.Listener(on_press=innerPressCallback, on_release=innerReleaseCallback) as listener:
-				listener.join()
-		finally:
-			termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
-
-#		GPIO.setmode(GPIO.BCM)
-#		GPIO.setup(KEY_CHANNEL, GPIO.IN)
-#		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=innerCallback, bouncetime=20)
 
 	def timePress(self):
 		self.lastRelease = time()
@@ -87,13 +51,6 @@ class Client:
 		releaseTime = (self.lastPress - self.lastRelease) * 1000
 		debug("Release: " + str(int(releaseTime)))
 		return releaseTime
-
-	def initCallback(self, channel):
-#		if GPIO.input(channel) == 0:
-#			self.initHandlePress()
-#		else:
-#			self.initHandleRelease()
-		pass
 
 	def initHandlePress(self):
 		releaseTimeMs = self.timeRelease()
@@ -127,10 +84,7 @@ class Client:
 	def startMessage(self):
 		print("Start")
 		self.addInitialization()
-		self.listener.resetClientCallback(self.messageCallback, self.handlePress, self.handleRelease)
-#		self.callback = self.messageCallback
-#		self.pressCallback = self.handlePress
-#		self.releaseCallback = self.handleRelease
+		self.listener.resetClientCallback(self.handlePress, self.handleRelease)
 
 	def addInitialization(self):
 		self.message.append(Symbol.DAH)
@@ -138,13 +92,6 @@ class Client:
 		self.message.append(Symbol.DAH)
 		self.message.append(Symbol.DIT)
 		self.message.append(Symbol.DAH)
-
-	def messageCallback(self, channel):
-#		if GPIO.input(channel) == 0:
-#			self.handlePress()
-#		else:
-#			self.handleRelease()
-		pass
 
 	def handlePress(self):
 		releaseTimeMs = self.timeRelease()
@@ -192,10 +139,7 @@ class Client:
 	def callSignError(self, message):
 		debug(message + ": Canceling message.")
 		self.message.clear()
-		self.listener.resetClientCallback(self.initCallback, self.initHandlePress, self.initHandleRelease)
-#		self.callback = self.initCallback
-#		self.pressCallback = self.initHandlePress
-#		self.releaseCallback = self.initHandleRelease
+		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
 	def checkFinish(self):
 		if self.message[-5:] == END_MESSAGE:
@@ -205,10 +149,7 @@ class Client:
 				self.waitingForDest = True
 				self.dests = None
 
-			self.listener.resetClientCallback(self.initCallback, self.initHandlePress, self.initHandleRelease)
-#			self.callback = self.initCallback
-#			self.pressCallback = self.initHandlePress
-#			self.releaseCallback = self.initHandleRelease
+			self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
 	def sendMessage(self):
 		for dest in self.dests:

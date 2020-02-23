@@ -14,15 +14,15 @@ class KeyboardListener:
 		self.pressCallback = lambda: common.fatal("Press callback not defined.")
 		self.releaseCallback = lambda: common.fatal("Release callback not defined.")
 		self.ctrlPressed = False
-		self.pressed = False
+		self.telegraphKeyPressed = False
 
 		self.oldSettings = termios.tcgetattr(sys.stdin.fileno())
 		self.setupCallbacks()
 
 	def setupCallbacks(self):
 		def innerPressCallback(key):
-			if key == keyboard.Key.space and not self.pressed:
-				self.pressed = True
+			if key == keyboard.Key.space and not self.telegraphKeyPressed:
+				self.telegraphKeyPressed = True
 				self.pressCallback()
 
 			if key == keyboard.Key.ctrl:
@@ -33,12 +33,12 @@ class KeyboardListener:
 
 		def innerReleaseCallback(key):
 			if key == keyboard.Key.space:
-				self.pressed = False
+				self.telegraphKeyPressed = False
 				self.releaseCallback()
 
 			if key == keyboard.Key.enter:
 				self.server.playMessage()
-			if key == keyboard.Key.delete:
+			if key == keyboard.Key.delete or key == keyboard.Key.backspace:
 				self.server.deleteMessage()
 
 			if key == keyboard.Key.ctrl:
@@ -51,7 +51,10 @@ class KeyboardListener:
 		listener = keyboard.Listener(on_press=innerPressCallback, on_release=innerReleaseCallback)
 		listener.start()
 
-	def resetClientCallback(self, gpioCallback=None, pressCallback=None, releaseCallback=None):
+	def updateMessageIndicator(self, messages):
+		print("Messages: " + str(messages) + ".")
+
+	def resetClientCallback(self, pressCallback, releaseCallback):
 		self.pressCallback = pressCallback
 		self.releaseCallback = releaseCallback
 
