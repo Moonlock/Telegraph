@@ -11,8 +11,14 @@ from src.telegraph import server
 from src.telegraph.keyboardListener import KeyboardListener
 import setup
 
+try:
+	from RPi import GPIO
+	from src.telegraph.GpioListener import GpioListener
+	usingGpio = True
+except ImportError:
+	usingGpio = False
 
-#from RPi import GPIO
+
 config = configparser.ConfigParser()
 config.read(constants.CONFIG_FILE)
 if not config.sections():
@@ -33,7 +39,7 @@ else:
 	serverAddress = clientConfig['Address']
 	serverPort = clientConfig['Port']
 
-listener = KeyboardListener()
+listener = GpioListener() if usingGpio else KeyboardListener()
 
 clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, killed))
 clientThread.start()
@@ -49,6 +55,7 @@ def handleSigInt(sig, frame):
 	killed.set()
 	clientThread.join()
 	serverThread.join()
-#	GPIO.cleanup()
+	if usingGpio:
+		GPIO.cleanup()
 
 signal.signal(signal.SIGINT, handleSigInt)
