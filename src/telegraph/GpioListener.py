@@ -50,6 +50,6 @@ class GpioListener:
 		GPIO.add_event_detect(DELETE_BUTTON_CHANNEL, GPIO.FALLING, callback=server.deleteMessage, bouncetime=1000)
 
 	def cleanUp(self):
-		termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self.oldSettings)
+		GPIO.cleanup()
 
 

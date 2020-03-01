@@ -52,7 +52,5 @@ def handleSigInt(sig, frame):
 	killed.set()
 	clientThread.join()
 	serverThread.join()
-	if usingGpio:
-		GPIO.cleanup()
 
 signal.signal(signal.SIGINT, handleSigInt)
