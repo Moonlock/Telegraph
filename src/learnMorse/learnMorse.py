@@ -1,18 +1,27 @@
-from threading import Timer
+from subprocess import Popen
 from time import sleep
 import difflib
 import random
 import signal
-import subprocess
 import sys
 
+from src.constants import SOUND_FILES_PATH
 from src.learnMorse import users
 from src.learnMorse.alphabet import morse
 from src.symbols import Symbol
+import src.commonFunctions as common
 
 
 COUNTS_PER_WORD = 50
-MS_PER_MINUTE = 60000
+SECONDS_PER_MINUTE = 60
+
+DIT_FILE = SOUND_FILES_PATH + "learnMorse-dit.sox"
+DAH_FILE = SOUND_FILES_PATH + "learnMorse-dah.sox"
+SYMBOL_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-symbol.sox"
+CHAR_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-char.sox"
+WORD_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-word.sox"
+TEST_FILE = SOUND_FILES_PATH + "learnMorse-test.sox"
+
 
 class morseTest:
 
@@ -20,12 +29,14 @@ class morseTest:
 		signal.signal(signal.SIGINT, self.handleSigInt)
 
 		self.masterList = []
+		self.user = user
 		self.charWpm = charWpm
 		self.overallWpm = overallWpm
-		self.msPerCount = MS_PER_MINUTE / (COUNTS_PER_WORD * self.charWpm)
-		self.ditFile = "dot-20wpm.ogg" if charWpm == 20 else "dot-15wpm.ogg"
-		self.dahFile = "dash-20wpm.ogg" if charWpm == 20 else "dash-15wpm.ogg"
-		self.user = user
+		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * self.charWpm)
+		self.ditLength = timeUnit
+		self.dahLength = 3*timeUnit
+		Popen(['sox', '-n', DIT_FILE, 'synth', str(timeUnit), 'sin', '900'])
+		Popen(['sox', '-n', DAH_FILE, 'synth', str(3*timeUnit), 'sin', '900'])
 
 		# Equations from http://www.arrl.org/files/file/Technology/x9004008.pdf
 		totalDelay = (60*self.charWpm - 37.2*self.overallWpm) / \
@@ -34,56 +45,59 @@ class morseTest:
 		self.charSpace = 3*totalDelay / 19 - self.symbolSpace
 		self.wordSpace = 7*totalDelay / 19 - self.symbolSpace
 
+		Popen(['sox', '-n', SYMBOL_SPACE_FILE, 'trim', '0', str(self.symbolSpace)])
+		Popen(['sox', '-n', CHAR_SPACE_FILE, 'trim', '0', str(self.charSpace)])
+		Popen(['sox', '-n', WORD_SPACE_FILE, 'trim', '0', str(self.wordSpace)])
+
 		self.chars = []
-		for x in range(numChars):
+		for _ in range(numChars):
 			self.chars.append(morse.popitem(0))
 
-		self.timer = Timer(testTime, self.stopTest)
+		self.testTime = testTime
 
 		sleep(2)
-		self.running = True
-		self.timer.start()
 		self.startTest()
 
 	def handleSigInt(self, sig, frame):
-		self.timer.cancel()
+		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
+		common.deleteFiles(SOUND_FILES_PATH, "temp-", ".sox")
 		sys.exit()
 
-	def playDit(self):
-		subprocess.call(["paplay", "resources/sounds/" + self.ditFile])
-		sleep(self.symbolSpace)
-
-	def playDah(self):
-		subprocess.call(["paplay", "resources/sounds/" + self.dahFile])
-		sleep(self.symbolSpace)
-
-	def playCharSpace(self):
-		sleep(self.charSpace)
-
-	def playWordSpace(self):
-		self.masterList.append(' ')
-		sleep(self.wordSpace)
-
 	def startTest(self):
-
-		play = {
-			Symbol.DIT: self.playDit,
-			Symbol.DAH: self.playDah,
-		}
 
 		print("Enter what you hear:")
 		print(" > ", end="")
 		sys.stdout.flush()
 
-		while self.running:
+		timeSpent = 0
+		fileList = []
+
+		while timeSpent < self.testTime:
+
 			wordLength = random.choice(range(8)) + 1
-			for x in range(wordLength):
+			for _ in range(wordLength):
 				char = random.choice(self.chars)
 				self.masterList.append(char[0])
+
 				for symbol in char[1]:
-					play[symbol]()
-				self.playCharSpace()
-			self.playWordSpace()
+					if symbol == Symbol.DIT:
+						fileList.append(DIT_FILE)
+						timeSpent += self.ditLength
+					else:
+						fileList.append(DAH_FILE)
+						timeSpent += self.dahLength
+					fileList.append(SYMBOL_SPACE_FILE)
+					timeSpent += self.symbolSpace
+
+				fileList.append(CHAR_SPACE_FILE)
+				timeSpent += self.charSpace
+
+			fileList.append(WORD_SPACE_FILE)
+			timeSpent += self.wordSpace
+			self.masterList.append(' ')
+
+		common.createFile(fileList, TEST_FILE)
+		Popen(['play', '-q', TEST_FILE])
 
 		#Remove final word space
 		self.masterList.pop()
@@ -93,6 +107,8 @@ class morseTest:
 		print("   " + master)
 		self.checkAnswer(response.upper(), master)
 
+		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
+
 	def checkAnswer(self, response, master):
 		diff = difflib.SequenceMatcher(None, master, response, autojunk=False)
 		score = diff.ratio() * 100
@@ -101,5 +117,3 @@ class morseTest:
 		if score >= 90:
 			users.increaseCharacters(self.user)
 
-	def stopTest(self):
-		self.running = False

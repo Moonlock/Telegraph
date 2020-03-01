@@ -5,6 +5,7 @@ import socket
 from RPi import GPIO
 from src.commonFunctions import debug, fatal
 from src.symbols import Symbol
+import src.commonFunctions as common
 
 
 LED_CHANNEL = 16
@@ -85,7 +86,7 @@ class Server:
 
 	def createMessageFile(self, msg):
 		prevIsChar = False
-		msgFileList = []
+		msgFileList = [INIT_SPACE_FILE]
 		for byte in msg:
 			symbols = self.parseSymbols(byte)
 
@@ -99,10 +100,7 @@ class Server:
 				prevIsChar = isChar
 
 		filename = "{}.sox".format(self.nextMessage)
-		command = ['sox', INIT_SPACE_FILE]
-		command.extend(msgFileList)
-		command.append(filename)
-		Popen(command)
+		common.createFile(msgFileList, filename)
 		Popen(['play', '-q', filename])
 
 	def parseSymbols(self, byte):
