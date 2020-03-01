@@ -2,15 +2,11 @@ from os import remove
 from subprocess import Popen
 import socket
 
-from RPi import GPIO
 from src.commonFunctions import debug, fatal
 from src.symbols import Symbol
 import src.commonFunctions as common
 
 
-LED_CHANNEL = 16
-PLAY_BUTTON_CHANNEL = 20
-DELETE_BUTTON_CHANNEL = 21
 COUNTS_PER_WORD = 50
 SECONDS_PER_MINUTE = 60
 
@@ -24,7 +20,7 @@ INIT_SPACE_FILE = SOUND_FILES_PATH + "init_space.sox"
 
 class Server:
 
-	def __init__(self, port, wpm, killed):
+	def __init__(self, port, wpm, listener, killed):
 		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
 		self.createAudioFiles(timeUnit)
 
@@ -38,14 +34,8 @@ class Server:
 				Symbol.WORD_SPACE: WORD_SPACE_FILE
 		}
 
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(LED_CHANNEL, GPIO.OUT, initial=False)
-		GPIO.setup(PLAY_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(DELETE_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-		# Can probably lower the bouncetime when I get a decent button.
-		GPIO.add_event_detect(PLAY_BUTTON_CHANNEL, GPIO.FALLING, callback=self.playMessage, bouncetime=1000)
-		GPIO.add_event_detect(DELETE_BUTTON_CHANNEL, GPIO.FALLING, callback=self.deleteMessage, bouncetime=1000)
+		self.listener = listener
+		self.listener.setServer(server=self)
 
 		socket.setdefaulttimeout(1)
 		try:
@@ -81,8 +71,7 @@ class Server:
 		self.createMessageFile(msg)
 
 		self.nextMessage += 1
-		GPIO.output(LED_CHANNEL, GPIO.HIGH)
-		debug("LED on.")
+		self.listener.updateMessageIndicator(self.nextMessage - self.curMessage)
 
 	def createMessageFile(self, msg):
 		prevIsChar = False
@@ -110,18 +99,16 @@ class Server:
 			symbols.append(symbol)
 		return symbols
 
-	def playMessage(self, channel):
+	def playMessage(self, channel=None):
 		debug("Play message.")
 		if self.curMessage < self.nextMessage:
 			Popen(['play', '-q', "{}.sox".format(self.curMessage)])
 
-	def deleteMessage(self, channel):
+	def deleteMessage(self, channel=None):
 		debug("delete message.")
 		if self.curMessage < self.nextMessage:
 			remove("{}.sox".format(self.curMessage))
 			self.curMessage += 1
 
-			if self.curMessage == self.nextMessage:
-				GPIO.output(LED_CHANNEL, GPIO.LOW)
-				debug("LED off.")
+			self.listener.updateMessageIndicator(self.nextMessage - self.curMessage)
 

@@ -2,20 +2,19 @@ from math import ceil
 from time import time
 import socket
 
-from RPi import GPIO
 from src.commonFunctions import debug, fatal
 from src.symbols import Symbol
 from src.telegraph.destinationConfig import DestinationConfig
+import termios
 
 
-KEY_CHANNEL = 4
 INIT_MESSAGE_TIME_UNITS = 15
 INIT_MESSAGE_SYMBOL_LENGTH = 6	# Includes word space following init message
 END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
 
-	def __init__(self, multiDest, serv, servPort, killed, isTest=False):
+	def __init__(self, multiDest, serv, servPort, listener, killed, isTest=False):
 		self.multiDest = multiDest
 		self.waitingForDest = multiDest
 		if multiDest:
@@ -28,21 +27,18 @@ class Client:
 		self.lastPress = 0
 		self.lastRelease = 0
 		self.timeUnit = 0
+		self.pressed = False
 
 		self.destConfig = DestinationConfig(self.callSignError)
 
-		self.callback = self.initCallback
-		self.setUpCallback()
+		self.pressCallback = self.initHandlePress
+		self.releaseCallback = self.initHandleRelease
+		self.listener = listener
+		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
 		if not isTest:
 			killed.wait()
-
-	def setUpCallback(self):
-		def innerCallback(channel):
-			self.callback(channel)
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(KEY_CHANNEL, GPIO.IN)
-		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=innerCallback, bouncetime=20)
+		self.listener.cleanUp()
 
 	def timePress(self):
 		self.lastRelease = time()
@@ -55,12 +51,6 @@ class Client:
 		releaseTime = (self.lastPress - self.lastRelease) * 1000
 		debug("Release: " + str(int(releaseTime)))
 		return releaseTime
-
-	def initCallback(self, channel):
-		if GPIO.input(channel) == 0:
-			self.initHandlePress()
-		else:
-			self.initHandleRelease()
 
 	def initHandlePress(self):
 		releaseTimeMs = self.timeRelease()
@@ -87,13 +77,14 @@ class Client:
 
 		self.timeUnit = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
 		self.initTimings.clear()
-		debug("Starting")
+		debug("Starting with timeunit " + str(self.timeUnit))
 		self.startMessage()
 
 
 	def startMessage(self):
+		print("Start")
 		self.addInitialization()
-		self.callback = self.messageCallback
+		self.listener.resetClientCallback(self.handlePress, self.handleRelease)
 
 	def addInitialization(self):
 		self.message.append(Symbol.DAH)
@@ -101,12 +92,6 @@ class Client:
 		self.message.append(Symbol.DAH)
 		self.message.append(Symbol.DIT)
 		self.message.append(Symbol.DAH)
-
-	def messageCallback(self, channel):
-		if GPIO.input(channel) == 0:
-			self.handlePress()
-		else:
-			self.handleRelease()
 
 	def handlePress(self):
 		releaseTimeMs = self.timeRelease()
@@ -154,7 +139,7 @@ class Client:
 	def callSignError(self, message):
 		debug(message + ": Canceling message.")
 		self.message.clear()
-		self.callback = self.initCallback
+		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
 	def checkFinish(self):
 		if self.message[-5:] == END_MESSAGE:
@@ -164,7 +149,7 @@ class Client:
 				self.waitingForDest = True
 				self.dests = None
 
-			self.callback = self.initCallback
+			self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
 	def sendMessage(self):
 		for dest in self.dests:

@@ -23,7 +23,7 @@ def debug(message):
 		print(message)
 
 def fatal(message=""):
-	print(message)
+	print("Error: " + message)
 	sys.exit()
 
 def toMorse(sign):
