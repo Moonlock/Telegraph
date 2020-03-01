@@ -8,13 +8,13 @@ from src import constants
 from src.commonFunctions import fatal
 from src.telegraph import client
 from src.telegraph import server
-from src.telegraph.keyboardListener import KeyboardListener
 
 try:
 	from RPi import GPIO
 	from src.telegraph.GpioListener import GpioListener
 	usingGpio = True
 except ImportError:
+	from src.telegraph.keyboardListener import KeyboardListener
 	usingGpio = False
 
 
