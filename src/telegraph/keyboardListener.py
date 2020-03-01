@@ -13,6 +13,8 @@ class KeyboardListener:
 	def __init__(self):
 		self.pressCallback = lambda: common.fatal("Press callback not defined.")
 		self.releaseCallback = lambda: common.fatal("Release callback not defined.")
+		self.server = None
+
 		self.ctrlPressed = False
 		self.telegraphKeyPressed = False
 

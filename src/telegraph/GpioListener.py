@@ -34,10 +34,6 @@ class GpioListener:
 		GPIO.setup(PLAY_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 		GPIO.setup(DELETE_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-		# Can probably lower the bouncetime when I get a decent button.
-		GPIO.add_event_detect(PLAY_BUTTON_CHANNEL, GPIO.FALLING, callback=self.server.playMessage, bouncetime=1000)
-		GPIO.add_event_detect(DELETE_BUTTON_CHANNEL, GPIO.FALLING, callback=self.server.deleteMessage, bouncetime=1000)
-
 	def updateMessageIndicator(self, messages):
 		if messages:
 			GPIO.output(LED_CHANNEL, GPIO.HIGH)
@@ -49,7 +45,9 @@ class GpioListener:
 		self.releaseCallback = releaseCallback
 
 	def setServer(self, server):
-		self.server = server
+		# Can probably lower the bouncetime when I get a decent button.
+		GPIO.add_event_detect(PLAY_BUTTON_CHANNEL, GPIO.FALLING, callback=server.playMessage, bouncetime=1000)
+		GPIO.add_event_detect(DELETE_BUTTON_CHANNEL, GPIO.FALLING, callback=server.deleteMessage, bouncetime=1000)
 
 	def cleanUp(self):
 		termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self.oldSettings)
