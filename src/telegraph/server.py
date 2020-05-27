@@ -20,12 +20,15 @@ INIT_SPACE_FILE = SOUND_FILES_PATH + "init_space.sox"
 
 class Server:
 
-	def __init__(self, port, wpm, listener, killed):
+	def __init__(self, port, wpm, listener, killed, sendInProgress):
 		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
 		self.createAudioFiles(timeUnit)
 
 		self.curMessage = 0
 		self.nextMessage = 0
+		self.unplayedMessages = []
+		self.sendInProgress = sendInProgress
+		self.messageProcess = None
 
 		self.symbolToAudioFileMap = {
 				Symbol.DIT: DIT_FILE,
@@ -49,6 +52,7 @@ class Server:
 
 		while not killed.is_set():
 			try:
+				self.checkUnplayedMessages()
 				conn, addr = self.sock.accept()
 				data = conn.recv(1024)
 				conn.close()
@@ -67,11 +71,24 @@ class Server:
 		# First second or so seems to get cut off on the Pi, so add 2 seconds of silence to the start
 		Popen(['sox', '-n', INIT_SPACE_FILE, 'trim', '0', '2'])
 
+	def checkUnplayedMessages(self):
+		if self.unplayedMessages and not self.sendInProgress.isSet():
+			played = self.playMessage(messageNum=self.unplayedMessages[0])
+			if played:
+				self.unplayedMessages.pop(0)
+
 	def handleMessage(self, msg):
 		self.createMessageFile(msg)
-
+		newMessage = self.nextMessage
 		self.nextMessage += 1
+
 		self.listener.updateMessageIndicator(self.nextMessage - self.curMessage)
+
+		if self.sendInProgress.isSet():
+			debug("Send in progress, delaying message.")
+			self.unplayedMessages.append(newMessage)
+		elif not self.playMessage(messageNum=newMessage):
+			self.unplayedMessages.append(newMessage)
 
 	def createMessageFile(self, msg):
 		prevIsChar = False
@@ -90,7 +107,6 @@ class Server:
 
 		filename = "{}.sox".format(self.nextMessage)
 		common.createFile(msgFileList, filename)
-		Popen(['play', '-q', filename])
 
 	def parseSymbols(self, byte):
 		symbols = []
@@ -99,10 +115,20 @@ class Server:
 			symbols.append(symbol)
 		return symbols
 
-	def playMessage(self, channel=None):
-		debug("Play message.")
-		if self.curMessage < self.nextMessage:
-			Popen(['play', '-q', "{}.sox".format(self.curMessage)])
+	def playMessage(self, channel=None, messageNum=None):
+		if self.messageProcess and self.messageProcess.poll() is None:
+			debug("Already playing a message.")
+			return False
+
+		message = messageNum if messageNum is not None else self.curMessage
+
+		if message < self.nextMessage:
+			debug("Play message {}.".format(message))
+			self.messageProcess = Popen(['play', '-q', "{}.sox".format(message)])
+		else:
+			debug("No message to play.")
+
+		return True
 
 	def deleteMessage(self, channel=None):
 		debug("delete message.")

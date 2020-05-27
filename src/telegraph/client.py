@@ -14,7 +14,7 @@ END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
 
-	def __init__(self, multiDest, serv, servPort, listener, killed, isTest=False):
+	def __init__(self, multiDest, serv, servPort, listener, killed, sendInProgress, isTest=False):
 		self.multiDest = multiDest
 		self.waitingForDest = multiDest
 		if multiDest:
@@ -35,6 +35,8 @@ class Client:
 		self.releaseCallback = self.initHandleRelease
 		self.listener = listener
 		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
+
+		self.sendInProgress = sendInProgress
 
 		if not isTest:
 			killed.wait()
@@ -83,6 +85,7 @@ class Client:
 
 	def startMessage(self):
 		print("Start")
+		self.sendInProgress.set()
 		self.addInitialization()
 		self.listener.resetClientCallback(self.handlePress, self.handleRelease)
 
@@ -138,6 +141,7 @@ class Client:
 
 	def callSignError(self, message):
 		debug(message + ": Canceling message.")
+		self.sendInProgress.clear()
 		self.message.clear()
 		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
@@ -149,6 +153,7 @@ class Client:
 				self.waitingForDest = True
 				self.dests = None
 
+			self.sendInProgress.clear()
 			self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
 	def sendMessage(self):

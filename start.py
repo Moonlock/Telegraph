@@ -26,6 +26,7 @@ if config['Common'].getint('Version') != constants.CONFIG_FILE_VERSION:
 	fatal("Config file version mismatch; please recreate.")
 
 killed = Event()
+sendInProgress = Event()
 
 clientConfig = config['Client']
 multiDest = clientConfig.getboolean('Multiple Destinations')
@@ -38,14 +39,14 @@ else:
 
 listener = GpioListener() if usingGpio else KeyboardListener()
 
-clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, killed))
+clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, killed, sendInProgress))
 clientThread.start()
 
 serverConfig = config['Server']
 listenPort = serverConfig['Port']
 wpm = int(serverConfig['WPM'])
 
-serverThread = Thread(target=server.Server, args=(listenPort, wpm, listener, killed))
+serverThread = Thread(target=server.Server, args=(listenPort, wpm, listener, killed, sendInProgress))
 serverThread.start()
 
 def handleSigInt(sig, frame):
