@@ -1,7 +1,7 @@
+from threading import Event
 from unittest import mock
 import unittest
 
-from RPi import GPIO
 from src.symbols import Symbol as s
 from src.telegraph.client import Client
 from src.telegraph.destinationConfig import DestinationConfig
@@ -19,11 +19,10 @@ INIT_MESSAGE = [s.DAH, s.DIT, s.DAH, s.DIT, s.DAH]
 
 class TestSingleDestination(unittest.TestCase):
 
-	def setUp(self):
-		self.client = Client(False, '1.1.1.1', '8000', None, True)
-
-	def tearDown(self):
-            GPIO.cleanup()
+	@mock.patch('src.telegraph.keyboardListener.KeyboardListener')
+	def setUp(self, mock_listener):
+		self.mock_listener_instance = mock_listener.instance
+		self.client = Client(False, '1.1.1.1', '8000', self.mock_listener_instance, None, Event(), True)
 
 
 	@mock.patch('src.telegraph.client.time')
@@ -36,6 +35,10 @@ class TestSingleDestination(unittest.TestCase):
 
 		self.assertEqual(DIT*1000, self.client.timeUnit)
 		self.assertEqual(INIT_MESSAGE, self.client.message)
+
+		calls = [mock.call(self.client.initHandlePress, self.client.initHandleRelease),
+				mock.call(self.client.handlePress, self.client.handleRelease)]
+		self.mock_listener_instance.resetClientCallback.assert_has_calls(calls)
 
 	@mock.patch('src.telegraph.client.time')
 	@mock.patch('src.telegraph.client.socket')
@@ -51,20 +54,19 @@ class TestSingleDestination(unittest.TestCase):
 		instance = mock_socket.socket.return_value
 		instance.connect.assert_called_with(('1.1.1.1', 8000))
 		self.assertTrue(instance.sendall.called)
+		self.mock_listener_instance.resetClientCallback.assert_called_with(self.client.initHandlePress, self.client.initHandleRelease)
 
 
 class TestMultipleDestinations(unittest.TestCase):
 
-	def setUp(self):
-		self.client = Client(True, None, None, None, True)
+	@mock.patch('src.telegraph.keyboardListener.KeyboardListener')
+	def setUp(self, mock_listener):
+		self.client = Client(True, None, None, mock_listener, None, Event(), True)
 		self.client.destConfig = DestinationConfig(self.client.callSignError,
 				"test/telegraph/testContacts.ini", "test/telegraph/testGroups.ini")
 
 		self.moonlockEndpoint = ('1.1.1.1', '8000')
 		self.muskratEndpoint = ('2.2.2.2', '8001')
-
-	def tearDown(self):
-            GPIO.cleanup()
 
 
 	@mock.patch('src.telegraph.client.time')
