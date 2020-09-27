@@ -1,8 +1,8 @@
 import configparser
 
-from src import constants
-from src.commonFunctions import toMorse, writeConfig
-from src.telegraph.destination import Contact, Group
+from telegraph.client.destination import Contact, Group
+from telegraph.common import constants
+from telegraph.common.commonFunctions import toMorse, writeConfig
 
 
 class DestinationConfig:

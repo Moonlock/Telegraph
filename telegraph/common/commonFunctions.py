@@ -4,9 +4,9 @@ import os
 import subprocess
 import sys
 
-from src import constants
-from src.learnMorse.alphabet import morse
-from src.symbols import Symbol
+from telegraph.common import constants
+from telegraph.common.symbols import Symbol
+from telegraph.learnMorse.alphabet import morse
 
 
 try:

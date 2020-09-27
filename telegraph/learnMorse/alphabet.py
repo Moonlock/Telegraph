@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from src.symbols import Symbol as s
+from telegraph.common.symbols import Symbol as s
 
 
 morse = OrderedDict()

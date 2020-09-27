@@ -2,8 +2,8 @@
 
 import sys
 
-from src.learnMorse import users
-from src.learnMorse.testModes import testModes
+from telegraph.learnMorse import users
+from telegraph.learnMorse.testModes import testModes
 
 
 try:

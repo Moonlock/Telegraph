@@ -4,17 +4,18 @@ from threading import Thread, Event
 import configparser
 import signal
 
-from src import constants
-from src.commonFunctions import fatal
-from src.telegraph import client
-from src.telegraph import server
+from telegraph.client import client
+from telegraph.common import constants
+from telegraph.common.commonFunctions import fatal
+from telegraph.server import server
+
 
 try:
 	from RPi import GPIO
-	from src.telegraph.GpioListener import GpioListener
+	from telegraph.listeners.gpioListener import GpioListener
 	usingGpio = True
 except ImportError:
-	from src.telegraph.keyboardListener import KeyboardListener
+	from telegraph.listeners.keyboardListener import KeyboardListener
 	usingGpio = False
 
 

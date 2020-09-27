@@ -2,8 +2,8 @@ import configparser
 import os
 import unittest
 
-from src import commonFunctions
-from src.symbols import Symbol as s
+from telegraph.common import commonFunctions
+from telegraph.common.symbols import Symbol as s
 
 
 class Test(unittest.TestCase):

@@ -1,7 +1,7 @@
 import sys
 
 from RPi import GPIO
-import src.commonFunctions as common
+import telegraph.common.commonFunctions as common
 import termios
 
 

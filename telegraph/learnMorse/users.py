@@ -2,10 +2,10 @@
 
 import configparser
 
-from src.commonFunctions import fatal, writeConfig
+from telegraph.common.commonFunctions import fatal, writeConfig
 
 
-USERS_FILE = 'src/learnMorse/users.ini'
+USERS_FILE = 'resources/users.ini'
 
 def createNewUser(config):
 	print("Creating new user.")

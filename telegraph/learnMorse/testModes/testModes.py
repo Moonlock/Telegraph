@@ -1,7 +1,7 @@
 from enum import Enum
-from src.commonFunctions import fatal
-from src.learnMorse.testModes.randomLettersMode import RandomLettersMode
-from src.learnMorse.testModes.randomLettersSeparateMode import RandomLettersSeparateMode
+from telegraph.common.commonFunctions import fatal
+from telegraph.learnMorse.testModes.randomLettersMode import RandomLettersMode
+from telegraph.learnMorse.testModes.randomLettersSeparateMode import RandomLettersSeparateMode
 
 
 class TestMode(Enum):

@@ -3,10 +3,10 @@
 import configparser
 import sys
 
-from src import constants
-from src.commonFunctions import toMorse, fatal
-from src.telegraph.destination import Group
-from src.telegraph.destinationConfig import DestinationConfig
+from telegraph.client.destination import Group
+from telegraph.client.destinationConfig import DestinationConfig
+from telegraph.common import constants
+from telegraph.common.commonFunctions import toMorse, fatal
 
 
 # TODO: Removing a contact or changing their call sign will cause an error

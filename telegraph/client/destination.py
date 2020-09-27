@@ -1,5 +1,5 @@
-from src import constants
-from src.commonFunctions import toMorse
+from telegraph.common import constants
+from telegraph.common.commonFunctions import toMorse
 
 
 class Destination:

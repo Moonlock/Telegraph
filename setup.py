@@ -4,7 +4,7 @@ import configparser
 import os.path
 import sys
 
-from src import constants
+from telegraph.common import constants
 
 
 def main():

@@ -1,8 +1,8 @@
 import os
 import unittest
 
-from src.telegraph.destinationConfig import DestinationConfig
-import src.commonFunctions as common
+from telegraph.client.destinationConfig import DestinationConfig
+import telegraph.common.commonFunctions as common
 
 
 TEST_CONTACTS_FILE = "testContactsFile"

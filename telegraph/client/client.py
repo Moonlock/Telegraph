@@ -2,9 +2,9 @@ from math import ceil
 from time import time
 import socket
 
-from src.commonFunctions import debug, fatal
-from src.symbols import Symbol
-from src.telegraph.destinationConfig import DestinationConfig
+from telegraph.client.destinationConfig import DestinationConfig
+from telegraph.common.commonFunctions import debug, fatal
+from telegraph.common.symbols import Symbol
 import termios
 
 

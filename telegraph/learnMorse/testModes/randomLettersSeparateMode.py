@@ -6,11 +6,11 @@ import signal
 import sys
 import tty
 
-from src.constants import SOUND_FILES_PATH
-from src.learnMorse.alphabet import morse
-from src.learnMorse.testModes.testModeInterface import TestModeInterface
-from src.symbols import Symbol
-import src.commonFunctions as common
+from telegraph.common.constants import SOUND_FILES_PATH
+from telegraph.common.symbols import Symbol
+from telegraph.learnMorse.alphabet import morse
+from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface
+import telegraph.common.commonFunctions as common
 import termios
 
 

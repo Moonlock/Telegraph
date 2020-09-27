@@ -3,7 +3,7 @@ import signal
 import sys
 
 from pynput import keyboard
-import src.commonFunctions as common
+import telegraph.common.commonFunctions as common
 
 import termios
 

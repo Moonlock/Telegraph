@@ -2,9 +2,9 @@ from threading import Event
 from unittest import mock
 import unittest
 
-from src.symbols import Symbol as s
-from src.telegraph.client import Client
-from src.telegraph.destinationConfig import DestinationConfig
+from telegraph.client.client import Client
+from telegraph.client.destinationConfig import DestinationConfig
+from telegraph.common.symbols import Symbol as s
 
 
 DIT = 0.060
@@ -19,13 +19,13 @@ INIT_MESSAGE = [s.DAH, s.DIT, s.DAH, s.DIT, s.DAH]
 
 class TestSingleDestination(unittest.TestCase):
 
-	@mock.patch('src.telegraph.keyboardListener.KeyboardListener')
+	@mock.patch('telegraph.listeners.keyboardListener.KeyboardListener')
 	def setUp(self, mock_listener):
 		self.mock_listener_instance = mock_listener.instance
 		self.client = Client(False, '1.1.1.1', '8000', self.mock_listener_instance, None, Event(), True)
 
 
-	@mock.patch('src.telegraph.client.time')
+	@mock.patch('telegraph.client.client.time')
 	def testInitSequence(self, mock_time):
 		self.assertFalse(self.client.message)
 
@@ -40,8 +40,8 @@ class TestSingleDestination(unittest.TestCase):
 				mock.call(self.client.handlePress, self.client.handleRelease)]
 		self.mock_listener_instance.resetClientCallback.assert_has_calls(calls)
 
-	@mock.patch('src.telegraph.client.time')
-	@mock.patch('src.telegraph.client.socket')
+	@mock.patch('telegraph.client.client.time')
+	@mock.patch('telegraph.client.client.socket')
 	def testSend(self, mock_socket, mock_time):
 		self.client.message = []
 		self.client.message.extend(INIT_MESSAGE)
@@ -59,7 +59,7 @@ class TestSingleDestination(unittest.TestCase):
 
 class TestMultipleDestinations(unittest.TestCase):
 
-	@mock.patch('src.telegraph.keyboardListener.KeyboardListener')
+	@mock.patch('telegraph.listeners.keyboardListener.KeyboardListener')
 	def setUp(self, mock_listener):
 		self.client = Client(True, None, None, mock_listener, None, Event(), True)
 		self.client.destConfig = DestinationConfig(self.client.callSignError,
@@ -69,7 +69,7 @@ class TestMultipleDestinations(unittest.TestCase):
 		self.muskratEndpoint = ('2.2.2.2', '8001')
 
 
-	@mock.patch('src.telegraph.client.time')
+	@mock.patch('telegraph.client.client.time')
 	def testParseCallsign(self, mock_time):
 		self.client.message = []
 		self.client.message.extend(INIT_MESSAGE)
@@ -84,7 +84,7 @@ class TestMultipleDestinations(unittest.TestCase):
 		inputSequence(callsign, self.client.handlePress, self.client.handleRelease, mock_time)
 		self.assertEqual([self.moonlockEndpoint], self.client.dests)
 
-	@mock.patch('src.telegraph.client.time')
+	@mock.patch('telegraph.client.client.time')
 	def testIncorrectCallsignCancelsMessage(self, mock_time):
 		self.client.message = []
 		self.client.message.extend(INIT_MESSAGE)
@@ -97,8 +97,8 @@ class TestMultipleDestinations(unittest.TestCase):
 		self.assertEqual([], self.client.dests)
 		self.assertEqual([], self.client.message)
 
-	@mock.patch('src.telegraph.client.time')
-	@mock.patch('src.telegraph.client.socket')
+	@mock.patch('telegraph.client.client.time')
+	@mock.patch('telegraph.client.client.socket')
 	def testSendToGroup(self, mock_socket, mock_time):
 		self.client.message = []
 		self.client.message.extend(INIT_MESSAGE)

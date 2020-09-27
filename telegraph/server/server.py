@@ -2,10 +2,9 @@ from os import remove
 from subprocess import Popen
 import socket
 
-from src.commonFunctions import debug, fatal
-from src.constants import SOUND_FILES_PATH
-from src.symbols import Symbol
-import src.commonFunctions as common
+from telegraph.common.commonFunctions import debug, fatal, createFile
+from telegraph.common.constants import SOUND_FILES_PATH
+from telegraph.common.symbols import Symbol
 
 
 COUNTS_PER_WORD = 50
@@ -106,7 +105,7 @@ class Server:
 				prevIsChar = isChar
 
 		filename = "{}.sox".format(self.nextMessage)
-		common.createFile(msgFileList, filename)
+		createFile(msgFileList, filename)
 
 	def parseSymbols(self, byte):
 		symbols = []
