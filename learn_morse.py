@@ -17,4 +17,4 @@ overallWpm = int(userConfig["Overall WPM"])
 numChars = int(userConfig["Characters"])
 testTime = int(userConfig["Time"])
 
-mode.MorseTest(charWpm, overallWpm, numChars, testTime, user)
+mode(charWpm, overallWpm, numChars, testTime, user)

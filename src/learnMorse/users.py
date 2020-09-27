@@ -30,7 +30,7 @@ def increaseCharacters(user):
 		fatal("Failed to update user file: User " + user + " does not exist.")
 
 	numChars = config.getint(user, "Characters")
-	if(numChars == 36):
+	if(numChars == 26):
 		print("Number of Characters is already at maximum.")
 		return
 	numChars += 1

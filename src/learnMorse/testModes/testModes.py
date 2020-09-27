@@ -1,16 +1,17 @@
 from enum import Enum
 from src.commonFunctions import fatal
-from src.learnMorse.testModes import randomLettersMode, randomLettersSeparateMode
+from src.learnMorse.testModes.randomLettersMode import RandomLettersMode
+from src.learnMorse.testModes.randomLettersSeparateMode import RandomLettersSeparateMode
 
 
 class TestMode(Enum):
-	RANDOM = (0, "Random Letters", randomLettersMode)
-	RANDOM_SEPARATE = (1, "Random Letters (Separate)", randomLettersSeparateMode)
+	RANDOM = (0, "Random Letters", RandomLettersMode)
+	RANDOM_SEPARATE = (1, "Random Letters (One at a time)", RandomLettersSeparateMode)
 
-	def __init__(self, index, description, module):
+	def __init__(self, index, description, cls):
 		self.index = index
 		self.description = description
-		self.module = module
+		self.cls = cls
 
 	@classmethod
 	def getByIndex(cls, index):
@@ -35,4 +36,4 @@ def getTestMode():
 		fatal("Invalid selection.")
 
 	selectedMode = TestMode.getByIndex(modeNum)
-	return selectedMode.module
+	return selectedMode.cls

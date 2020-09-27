@@ -8,6 +8,7 @@ import sys
 from src.constants import SOUND_FILES_PATH
 from src.learnMorse import users
 from src.learnMorse.alphabet import morse
+from src.learnMorse.testModes.testModeInterface import TestModeInterface
 from src.symbols import Symbol
 import src.commonFunctions as common
 
@@ -23,7 +24,7 @@ WORD_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-word.sox"
 TEST_FILE = SOUND_FILES_PATH + "learnMorse-test.sox"
 
 
-class MorseTest:
+class RandomLettersMode(TestModeInterface):
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
 		signal.signal(signal.SIGINT, self.handleSigInt)

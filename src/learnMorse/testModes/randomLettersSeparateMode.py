@@ -8,6 +8,7 @@ import tty
 
 from src.constants import SOUND_FILES_PATH
 from src.learnMorse.alphabet import morse
+from src.learnMorse.testModes.testModeInterface import TestModeInterface
 from src.symbols import Symbol
 import src.commonFunctions as common
 import termios
@@ -20,9 +21,8 @@ DIT_FILE = SOUND_FILES_PATH + "learnMorse-dit.sox"
 DAH_FILE = SOUND_FILES_PATH + "learnMorse-dah.sox"
 
 
-class MorseTest:
+class RandomLettersSeparateMode(TestModeInterface):
 
-	# overallWpm, user not needed
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
 		signal.signal(signal.SIGINT, self.handleSigInt)
 
