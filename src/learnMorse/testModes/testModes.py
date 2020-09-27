@@ -1,0 +1,38 @@
+from enum import Enum
+from src.commonFunctions import fatal
+from src.learnMorse.testModes import randomLettersMode, randomLettersSeparateMode
+
+
+class TestMode(Enum):
+	RANDOM = (0, "Random Letters", randomLettersMode)
+	RANDOM_SEPARATE = (1, "Random Letters (Separate)", randomLettersSeparateMode)
+
+	def __init__(self, index, description, module):
+		self.index = index
+		self.description = description
+		self.module = module
+
+	@classmethod
+	def getByIndex(cls, index):
+		if index == 0:
+			return cls.RANDOM
+		elif index == 1:
+			return cls.RANDOM_SEPARATE
+		else:
+			fatal("Invalid Selection")
+
+def getTestMode():
+	print()
+	print("Select test mode:")
+	for mode in TestMode:
+		print("    " + str(mode.index) + ": " + mode.description)
+	print()
+	selection = input(" > ")
+
+	try:
+		modeNum = int(selection)
+	except IOError:
+		fatal("Invalid selection.")
+
+	selectedMode = TestMode.getByIndex(modeNum)
+	return selectedMode.module

@@ -1,18 +1,15 @@
 from subprocess import Popen
-from threading import Timer
 from time import sleep
 import difflib
 import random
 import signal
 import sys
-import tty
 
 from src.constants import SOUND_FILES_PATH
 from src.learnMorse import users
 from src.learnMorse.alphabet import morse
 from src.symbols import Symbol
 import src.commonFunctions as common
-import termios
 
 
 COUNTS_PER_WORD = 50
@@ -26,25 +23,23 @@ WORD_SPACE_FILE = SOUND_FILES_PATH + "learnMorse-word.sox"
 TEST_FILE = SOUND_FILES_PATH + "learnMorse-test.sox"
 
 
-class morseTest:
+class MorseTest:
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
 		signal.signal(signal.SIGINT, self.handleSigInt)
 
 		self.masterList = []
 		self.user = user
-		self.charWpm = charWpm
-		self.overallWpm = overallWpm
-		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * self.charWpm)
+		timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * charWpm)
 		self.ditLength = timeUnit
 		self.dahLength = 3*timeUnit
-		Popen(['sox', '-n', DIT_FILE, 'synth', str(timeUnit), 'sin', '900'])
-		Popen(['sox', '-n', DAH_FILE, 'synth', str(3*timeUnit), 'sin', '900'])
+		Popen(['sox', '-n', DIT_FILE, 'synth', str(self.ditLength), 'sin', '900'])
+		Popen(['sox', '-n', DAH_FILE, 'synth', str(self.dahLength), 'sin', '900'])
 
 		# Equations from http://www.arrl.org/files/file/Technology/x9004008.pdf
-		totalDelay = (60*self.charWpm - 37.2*self.overallWpm) / \
-					 (self.charWpm * self.overallWpm)
-		self.symbolSpace = 1.0 / (self.charWpm/60.0 * COUNTS_PER_WORD)
+		totalDelay = (60*charWpm - 37.2*overallWpm) / \
+					 (charWpm * overallWpm)
+		self.symbolSpace = 1.0 / (charWpm/60.0 * COUNTS_PER_WORD)
 		self.charSpace = 3*totalDelay / 19 - self.symbolSpace
 		self.wordSpace = 7*totalDelay / 19 - self.symbolSpace
 
@@ -57,32 +52,14 @@ class morseTest:
 			self.chars.append(morse.popitem(False))
 
 		self.testTime = testTime
-		self.timer = Timer(testTime, self.stopTest)
-
 
 		sleep(2)
-		self.running = True
-		self.timer.start()
-#		self.startTest()
-		self.test2()
+		self.startTest()
 
 	def handleSigInt(self, sig, frame):
-#		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
-#		common.deleteFiles(SOUND_FILES_PATH, "temp-", ".sox")
-#		sys.exit()
-		self.timer.cancel()
-		self.running = False
-
-	def stopTest(self):
-		self.running = False
-
-	def playDit(self):
-		Popen(['play', '-q', DIT_FILE])
-		sleep(self.symbolSpace + self.ditLength)
-
-	def playDah(self):
-		Popen(['play', '-q', DAH_FILE])
-		sleep(self.symbolSpace + self.dahLength)
+		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
+		common.deleteFiles(SOUND_FILES_PATH, "temp-", ".sox")
+		sys.exit()
 
 	def startTest(self):
 
@@ -118,7 +95,7 @@ class morseTest:
 			self.masterList.append(' ')
 
 		common.createFile(fileList, TEST_FILE)
-		Popen(['play', '-q', TEST_FILE])
+		proc = Popen(['play', '-q', TEST_FILE])
 
 		#Remove final word space
 		self.masterList.pop()
@@ -128,52 +105,14 @@ class morseTest:
 		print("   " + master)
 		self.checkAnswer(response.upper(), master)
 
+		proc.kill()
 		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
-
-	def getChar(self):
-		fd = sys.stdin.fileno()
-		old_settings = termios.tcgetattr(fd)
-		try:
-			tty.setraw(sys.stdin.fileno())
-			ch = sys.stdin.read(1)
-		finally:
-			termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
-		if ch == '\x03':
-			self.timer.cancel()
-			self.running = False
-			return None
-		return ch
-
-	def test2(self):
-		play = {
-			Symbol.DIT: self.playDit,
-			Symbol.DAH: self.playDah,
-		}
-
-		score = 0
-		while self.running:
-			char = random.choice(self.chars)
-			for symbol in char[1]:
-				play[symbol]()
-
-			response = self.getChar()
-
-			if response is None:
-				continue
-			if response.upper() == char[0]:
-				score += 1
-			else:
-				score -= 1
-				print(char[0])
-				sleep(1)
-		print(score)
 
 	def checkAnswer(self, response, master):
 		diff = difflib.SequenceMatcher(None, master, response, autojunk=False)
 		score = diff.ratio() * 100
 		print()
-		print("Score: " + str(score) + "%")
+		print("Score: " + "{:.2f}".format(score) + "%")
 		if score >= 90:
 			users.increaseCharacters(self.user)
 

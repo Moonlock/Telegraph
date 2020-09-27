@@ -2,11 +2,13 @@
 
 import sys
 
-from src.learnMorse import learnMorse, users
+from src.learnMorse import users
+from src.learnMorse.testModes import testModes
 
 
 try:
 	(user, userConfig) = users.getUserData()
+	mode = testModes.getTestMode()
 except KeyboardInterrupt:
 	sys.exit()
 
@@ -15,4 +17,4 @@ overallWpm = int(userConfig["Overall WPM"])
 numChars = int(userConfig["Characters"])
 testTime = int(userConfig["Time"])
 
-learnMorse.morseTest(charWpm, overallWpm, numChars, testTime, user)
+mode.MorseTest(charWpm, overallWpm, numChars, testTime, user)

@@ -47,6 +47,7 @@ def getUserData():
 	sections = config.sections()
 	i=0
 	print()
+	print("Select user:")
 	for user in sections:
 		print("    " + str(i) + ": " + user)
 		i += 1

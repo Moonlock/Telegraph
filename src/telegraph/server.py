@@ -3,6 +3,7 @@ from subprocess import Popen
 import socket
 
 from src.commonFunctions import debug, fatal
+from src.constants import SOUND_FILES_PATH
 from src.symbols import Symbol
 import src.commonFunctions as common
 
@@ -10,7 +11,6 @@ import src.commonFunctions as common
 COUNTS_PER_WORD = 50
 SECONDS_PER_MINUTE = 60
 
-SOUND_FILES_PATH = "resources/sounds/"
 DIT_FILE = SOUND_FILES_PATH + "dit.sox"
 DAH_FILE = SOUND_FILES_PATH + "dah.sox"
 SYMBOL_SPACE_FILE = SOUND_FILES_PATH + "symbol_space.sox"
