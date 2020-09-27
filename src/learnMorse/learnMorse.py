@@ -1,15 +1,18 @@
 from subprocess import Popen
+from threading import Timer
 from time import sleep
 import difflib
 import random
 import signal
 import sys
+import tty
 
 from src.constants import SOUND_FILES_PATH
 from src.learnMorse import users
 from src.learnMorse.alphabet import morse
 from src.symbols import Symbol
 import src.commonFunctions as common
+import termios
 
 
 COUNTS_PER_WORD = 50
@@ -51,17 +54,35 @@ class morseTest:
 
 		self.chars = []
 		for _ in range(numChars):
-			self.chars.append(morse.popitem(0))
+			self.chars.append(morse.popitem(False))
 
 		self.testTime = testTime
+		self.timer = Timer(testTime, self.stopTest)
+
 
 		sleep(2)
-		self.startTest()
+		self.running = True
+		self.timer.start()
+#		self.startTest()
+		self.test2()
 
 	def handleSigInt(self, sig, frame):
-		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
-		common.deleteFiles(SOUND_FILES_PATH, "temp-", ".sox")
-		sys.exit()
+#		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
+#		common.deleteFiles(SOUND_FILES_PATH, "temp-", ".sox")
+#		sys.exit()
+		self.timer.cancel()
+		self.running = False
+
+	def stopTest(self):
+		self.running = False
+
+	def playDit(self):
+		Popen(['play', '-q', DIT_FILE])
+		sleep(self.symbolSpace + self.ditLength)
+
+	def playDah(self):
+		Popen(['play', '-q', DAH_FILE])
+		sleep(self.symbolSpace + self.dahLength)
 
 	def startTest(self):
 
@@ -108,6 +129,45 @@ class morseTest:
 		self.checkAnswer(response.upper(), master)
 
 		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
+
+	def getChar(self):
+		fd = sys.stdin.fileno()
+		old_settings = termios.tcgetattr(fd)
+		try:
+			tty.setraw(sys.stdin.fileno())
+			ch = sys.stdin.read(1)
+		finally:
+			termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+		if ch == '\x03':
+			self.timer.cancel()
+			self.running = False
+			return None
+		return ch
+
+	def test2(self):
+		play = {
+			Symbol.DIT: self.playDit,
+			Symbol.DAH: self.playDah,
+		}
+
+		score = 0
+		while self.running:
+			char = random.choice(self.chars)
+			for symbol in char[1]:
+				play[symbol]()
+
+			response = self.getChar()
+
+			if response is None:
+				continue
+			if response.upper() == char[0]:
+				score += 1
+			else:
+				score -= 1
+				print(char[0])
+				sleep(1)
+		print(score)
 
 	def checkAnswer(self, response, master):
 		diff = difflib.SequenceMatcher(None, master, response, autojunk=False)
