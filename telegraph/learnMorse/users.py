@@ -5,7 +5,7 @@ import configparser
 from telegraph.common.commonFunctions import fatal, writeConfig
 
 
-USERS_FILE = 'resources/users.ini'
+USERS_FILE = 'resources/config/users.ini'
 
 def createNewUser(config):
 	print("Creating new user.")
