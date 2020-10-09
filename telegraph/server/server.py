@@ -2,20 +2,21 @@ from os import remove
 from subprocess import Popen
 import socket
 
-from telegraph.common.commonFunctions import debug, fatal, createFile
+from telegraph.common.commonFunctions import debug, fatal
 from telegraph.common.constants import SOUND_FILES_PATH
 from telegraph.common.symbols import Symbol
+import telegraph.common.commonFunctions as common
 
 
 COUNTS_PER_WORD = 50
 SECONDS_PER_MINUTE = 60
 
-DIT_FILE = SOUND_FILES_PATH + "dit.sox"
-DAH_FILE = SOUND_FILES_PATH + "dah.sox"
-SYMBOL_SPACE_FILE = SOUND_FILES_PATH + "symbol_space.sox"
-CHAR_SPACE_FILE = SOUND_FILES_PATH + "char_space.sox"
-WORD_SPACE_FILE = SOUND_FILES_PATH + "word_space.sox"
-INIT_SPACE_FILE = SOUND_FILES_PATH + "init_space.sox"
+DIT_FILE = SOUND_FILES_PATH + "server-dit.sox"
+DAH_FILE = SOUND_FILES_PATH + "server-dah.sox"
+SYMBOL_SPACE_FILE = SOUND_FILES_PATH + "server-symbol_space.sox"
+CHAR_SPACE_FILE = SOUND_FILES_PATH + "server-char_space.sox"
+WORD_SPACE_FILE = SOUND_FILES_PATH + "server-word_space.sox"
+INIT_SPACE_FILE = SOUND_FILES_PATH + "server-init_space.sox"
 
 class Server:
 
@@ -59,6 +60,12 @@ class Server:
 				self.handleMessage(data)
 			except socket.timeout:
 				continue
+
+		self.cleanUp()
+
+	def cleanUp(self):
+		common.deleteFiles(SOUND_FILES_PATH, "message-", ".sox")
+		common.deleteFiles(SOUND_FILES_PATH, "server-", ".sox")
 
 	def createAudioFiles(self, timeUnit):
 		Popen(['sox', '-n', DIT_FILE, 'synth', str(timeUnit), 'sin', '900'])
@@ -104,8 +111,8 @@ class Server:
 				msgFileList.append(self.symbolToAudioFileMap.get(symbol))
 				prevIsChar = isChar
 
-		filename = "{}.sox".format(self.nextMessage)
-		createFile(msgFileList, filename)
+		filename = "{}message-{}.sox".format(SOUND_FILES_PATH, self.nextMessage)
+		common.createFile(msgFileList, filename)
 
 	def parseSymbols(self, byte):
 		symbols = []
@@ -123,7 +130,7 @@ class Server:
 
 		if message < self.nextMessage:
 			debug("Play message {}.".format(message))
-			self.messageProcess = Popen(['play', '-q', "{}.sox".format(message)])
+			self.messageProcess = Popen(['play', '-q', "{}message-{}.sox".format(SOUND_FILES_PATH, message)])
 		else:
 			debug("No message to play.")
 
@@ -132,7 +139,7 @@ class Server:
 	def deleteMessage(self, channel=None):
 		debug("delete message.")
 		if self.curMessage < self.nextMessage:
-			remove("{}.sox".format(self.curMessage))
+			remove("{}message-{}.sox".format(SOUND_FILES_PATH, self.curMessage))
 			self.curMessage += 1
 
 			self.listener.updateMessageIndicator(self.nextMessage - self.curMessage)
