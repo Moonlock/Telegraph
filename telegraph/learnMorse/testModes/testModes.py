@@ -2,11 +2,13 @@ from enum import Enum
 from telegraph.common.commonFunctions import fatal
 from telegraph.learnMorse.testModes.randomLettersMode import RandomLettersMode
 from telegraph.learnMorse.testModes.randomLettersSeparateMode import RandomLettersSeparateMode
+from telegraph.learnMorse.testModes.textMode import TextMode
 
 
 class TestMode(Enum):
 	RANDOM = (0, "Random Letters", RandomLettersMode)
 	RANDOM_SEPARATE = (1, "Random Letters (One at a time)", RandomLettersSeparateMode)
+	TEXT = (2, "Text (No punctuation)", TextMode)
 
 	def __init__(self, index, description, cls):
 		self.index = index
@@ -19,6 +21,8 @@ class TestMode(Enum):
 			return cls.RANDOM
 		elif index == 1:
 			return cls.RANDOM_SEPARATE
+		elif index == 2:
+			return cls.TEXT
 		else:
 			fatal("Invalid Selection")
 
