@@ -8,7 +8,7 @@ from telegraph.learnMorse.testModes.textMode import TextMode
 class TestMode(Enum):
 	RANDOM = (0, "Random Letters", RandomLettersMode)
 	RANDOM_SEPARATE = (1, "Random Letters (One at a time)", RandomLettersSeparateMode)
-	TEXT = (2, "Text (No punctuation)", TextMode)
+	TEXT = (2, "Text (No numbers or punctuation)", TextMode)
 
 	def __init__(self, index, description, cls):
 		self.index = index

@@ -8,8 +8,7 @@ import sys
 
 from telegraph.common.constants import SOUND_FILES_PATH
 from telegraph.common.symbols import Symbol
-from telegraph.learnMorse import users
-from telegraph.learnMorse.alphabet import morse
+from telegraph.learnMorse.alphabet import letters
 from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface
 import telegraph.common.commonFunctions as common
 
@@ -89,10 +88,10 @@ class TextMode(TestModeInterface):
 				timeSpent += self.wordSpace
 				self.masterList.append(' ')
 
-			elif char.upper() in morse:
+			elif char.upper() in letters:
 				self.masterList.append(char)
 
-				for symbol in morse[char.upper()]:
+				for symbol in letters[char.upper()]:
 					if symbol == Symbol.DIT:
 						fileList.append(DIT_FILE)
 						timeSpent += self.ditLength
