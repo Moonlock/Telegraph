@@ -118,7 +118,7 @@ class TextMode(TestModeInterface):
 		response = input()
 		master = "".join(self.masterList)
 		print("   " + master)
-		self.checkAnswer(response.upper(), master)
+		self.checkAnswer(response.lower(), master.lower())
 
 		proc.kill()
 		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
