@@ -51,8 +51,8 @@ class GpioListener:
 	def startMessage(self):
 		self.turnOffRgbLed()
 		GPIO.output(RED, GPIO.HIGH)
-		p = GPIO.PWM(GREEN, 100)
-		p.start(25)
+		self.pwm = GPIO.PWM(GREEN, 100)
+		self.pwm.start(25)
 
 	def error(self):
 		self.turnOffRgbLed()
@@ -65,9 +65,9 @@ class GpioListener:
 		Timer(2, self.turnOffRgbLed).start()
 
 	def turnOffRgbLed(self):
+		self.pwm.stop()
 		GPIO.output(RED, GPIO.LOW)
 		GPIO.output(GREEN, GPIO.LOW)
-		GPIO.output(BLUE, GPIO.LOW)
 
 	def setServer(self, server):
 		# Can probably lower the bouncetime when I get a decent button.
