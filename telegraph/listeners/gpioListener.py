@@ -10,7 +10,6 @@ PLAY_BUTTON_CHANNEL = 20
 DELETE_BUTTON_CHANNEL = 21
 RED=13
 GREEN=19
-BLUE=26
 
 
 class GpioListener:
@@ -34,6 +33,8 @@ class GpioListener:
 		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=innerCallback, bouncetime=20)
 
 		GPIO.setup(LED_CHANNEL, GPIO.OUT, initial=False)
+		GPIO.setup(RED, GPIO.OUT, initial=False)
+		GPIO.setup(GREEN, GPIO.OUT, initial=False)
 		GPIO.setup(PLAY_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 		GPIO.setup(DELETE_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
