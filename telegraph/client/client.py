@@ -84,7 +84,7 @@ class Client:
 
 
 	def startMessage(self):
-		print("Start")
+		self.listener.startMessage()
 		self.sendInProgress.set()
 		self.addInitialization()
 		self.listener.resetClientCallback(self.handlePress, self.handleRelease)
@@ -141,6 +141,7 @@ class Client:
 
 	def callSignError(self, message):
 		debug(message + ": Canceling message.")
+		self.listener.error()
 		self.sendInProgress.clear()
 		self.message.clear()
 		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
@@ -153,6 +154,7 @@ class Client:
 				self.waitingForDest = True
 				self.dests = None
 
+			self.listener.sendSuccess()
 			self.sendInProgress.clear()
 			self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 

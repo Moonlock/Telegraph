@@ -53,6 +53,15 @@ class KeyboardListener:
 		listener = keyboard.Listener(on_press=innerPressCallback, on_release=innerReleaseCallback)
 		listener.start()
 
+	def startMessage(self):
+		print("Start")
+
+	def error(self):
+		pass
+
+	def sendSuccess(self):
+		pass
+
 	def updateMessageIndicator(self, messages):
 		print("Messages: " + str(messages) + ".")
 
