@@ -3,7 +3,7 @@ import signal
 import sys
 
 from pynput import keyboard
-import telegraph.common.commonFunctions as common
+from telegraph.common.commonFunctions import fatal
 
 import termios
 
@@ -11,15 +11,18 @@ import termios
 class KeyboardListener:
 
 	def __init__(self):
-		self.pressCallback = lambda: common.fatal("Press callback not defined.")
-		self.releaseCallback = lambda: common.fatal("Release callback not defined.")
+		self.pressCallback = lambda: fatal("Press callback not defined.")
+		self.releaseCallback = lambda: fatal("Release callback not defined.")
 		self.server = None
 
 		self.ctrlPressed = False
 		self.telegraphKeyPressed = False
 
+		self.serverConfigured = False
+		self.clientConfigured = False
+		self.hasStarted = False
+
 		self.oldSettings = termios.tcgetattr(sys.stdin.fileno())
-		self.setupCallbacks()
 
 	def setupCallbacks(self):
 		def innerPressCallback(key):
@@ -54,13 +57,13 @@ class KeyboardListener:
 		listener.start()
 
 	def startMessage(self):
-		print("Start")
+		print("Start message")
 
-	def error(self):
-		pass
+	def error(self, message):
+		print(message)
 
 	def sendSuccess(self):
-		pass
+		print("Message sent")
 
 	def updateMessageIndicator(self, messages):
 		print("Messages: " + str(messages) + ".")
@@ -69,8 +72,19 @@ class KeyboardListener:
 		self.pressCallback = pressCallback
 		self.releaseCallback = releaseCallback
 
+		self.clientConfigured = True
+		self.checkReady()
+
 	def setServer(self, server):
 		self.server = server
+
+		self.serverConfigured = True
+		self.checkReady()
+
+	def checkReady(self):
+		if not self.hasStarted and self.serverConfigured and self.clientConfigured:
+			self.hasStarted = True
+			self.setupCallbacks()
 
 	def cleanUp(self):
 		termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self.oldSettings)

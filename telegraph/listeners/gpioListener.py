@@ -1,7 +1,7 @@
 from threading import Timer
 
 from RPi import GPIO
-import telegraph.common.commonFunctions as common
+from telegraph.common.commonFunctions import debug, fatal
 
 
 KEY_CHANNEL = 4
@@ -15,8 +15,10 @@ GREEN=19
 class GpioListener:
 
 	def __init__(self):
-		self.pressCallback = lambda: common.fatal("Press callback not defined.")
-		self.releaseCallback = lambda: common.fatal("Release callback not defined.")
+		self.pwm = None
+
+		self.pressCallback = lambda: fatal("Press callback not defined.")
+		self.releaseCallback = lambda: fatal("Release callback not defined.")
 
 		self.setupCallbacks()
 
@@ -54,7 +56,8 @@ class GpioListener:
 		self.pwm = GPIO.PWM(GREEN, 100)
 		self.pwm.start(25)
 
-	def error(self):
+	def error(self, message):
+		debug(message)
 		self.turnOffRgbLed()
 		GPIO.output(RED, GPIO.HIGH)
 		Timer(2, self.turnOffRgbLed).start()
@@ -65,7 +68,8 @@ class GpioListener:
 		Timer(2, self.turnOffRgbLed).start()
 
 	def turnOffRgbLed(self):
-		self.pwm.stop()
+		if self.pwm:
+			self.pwm.stop()
 		GPIO.output(RED, GPIO.LOW)
 		GPIO.output(GREEN, GPIO.LOW)
 

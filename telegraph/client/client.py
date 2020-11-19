@@ -3,7 +3,7 @@ from time import time
 import socket
 
 from telegraph.client.destinationConfig import DestinationConfig
-from telegraph.common.commonFunctions import debug, fatal
+from telegraph.common.commonFunctions import debug
 from telegraph.common.symbols import Symbol
 import termios
 
@@ -140,29 +140,27 @@ class Client:
 		return dest.getEndpoints()
 
 	def callSignError(self, message):
-		debug(message + ": Canceling message.")
-		self.listener.error()
+		self.listener.error(message + ": Canceling message.")
 		self.sendInProgress.clear()
 		self.message.clear()
 		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
 	def checkFinish(self):
 		if self.message[-5:] == END_MESSAGE:
-			debug("Sending message.")
 			self.sendMessage()
 			if self.multiDest:
 				self.waitingForDest = True
 				self.dests = None
 
-			self.listener.sendSuccess()
 			self.sendInProgress.clear()
 			self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
 
 	def sendMessage(self):
 		for dest in self.dests:
 			sock = self.connectToServer(dest[0], dest[1])
-			self.sendToServer(sock, self.createMessage())
-			sock.close()
+			if sock is not None:
+				self.sendToServer(sock, self.createMessage())
+				sock.close()
 
 	def connectToServer(self, server, port):
 		try:
@@ -171,7 +169,8 @@ class Client:
 			sock.connect((server, int(port)))
 			return sock
 		except socket.error as e:
-			fatal("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
+			self.listener.error("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
+			return None
 
 	def createMessage(self):
 		messageData = 0
@@ -184,5 +183,6 @@ class Client:
 	def sendToServer(self, sock, message):
 		try:
 			sock.sendall(message)
+			self.listener.sendSuccess()
 		except socket.error as e:
-			fatal("Failed to send message.  {}: {}".format(e.errno, e.strerror))
+			self.listener.error("Failed to send message.  {}: {}".format(e.errno, e.strerror))

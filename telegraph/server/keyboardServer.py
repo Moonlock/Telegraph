@@ -33,6 +33,7 @@ class KeyboardServer(Server):
 				Symbol.WORD_SPACE: WORD_SPACE_FILE
 		}
 
+		self.listener.setServer(server=self)
 		self.start()
 
 	def cleanUp(self):

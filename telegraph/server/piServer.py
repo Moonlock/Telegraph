@@ -26,6 +26,7 @@ class PiServer(Server):
 					Symbol.CHAR_SPACE: self.playCharSpace,
 					Symbol.WORD_SPACE: self.playWordSpace}
 
+		self.listener.setServer(server=self)
 		self.start()
 
 	def cleanUp(self):
@@ -99,7 +100,7 @@ class PiServer(Server):
 		sleep(self.timeUnit*7)
 
 	def deleteMessage(self, channel=None):
-		debug("delete message.")
+		debug("Delete message; {} remaining.".format(len(self.messages)))
 		if self.messages:
 			self.messages.pop(0)
 			self.listener.updateMessageIndicator(len(self.messages))

@@ -17,7 +17,6 @@ class Server:
 		self.sendInProgress = sendInProgress
 
 		self.listener = listener
-		self.listener.setServer(server=self)
 
 		self.killed = killed
 		self.port = port
