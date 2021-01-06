@@ -7,7 +7,7 @@ from telegraph.server.server import Server
 import pigpio
 
 
-CHANNEL = 18
+BUZZER_CHANNEL = 18
 FREQUENCY = 900
 
 class PiServer(Server):
@@ -19,7 +19,7 @@ class PiServer(Server):
 		self.messagePlayLock = Lock()
 
 		self.pi = pigpio.pi()
-		self.pi.set_mode(CHANNEL, pigpio.OUTPUT)
+		self.pi.set_mode(BUZZER_CHANNEL, pigpio.OUTPUT)
 
 		self.play = {Symbol.DIT: self.playDit,
 					Symbol.DAH: self.playDah,
@@ -81,14 +81,14 @@ class PiServer(Server):
 		return True
 
 	def playDit(self):
-		self.pi.hardware_PWM(CHANNEL, FREQUENCY, 500000)
+		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 500000)
 		sleep(self.timeUnit)
-		self.pi.hardware_PWM(CHANNEL, FREQUENCY, 0)
+		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 0)
 
 	def playDah(self):
-		self.pi.hardware_PWM(CHANNEL, FREQUENCY, 500000)
+		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 500000)
 		sleep(self.timeUnit * 3)
-		self.pi.hardware_PWM(CHANNEL, FREQUENCY, 0)
+		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 0)
 
 	def playSymbolSpace(self):
 		sleep(self.timeUnit)
@@ -100,8 +100,8 @@ class PiServer(Server):
 		sleep(self.timeUnit*7)
 
 	def deleteMessage(self, channel=None):
-		debug("Delete message; {} remaining.".format(len(self.messages)))
 		if self.messages:
 			self.messages.pop(0)
 			self.listener.updateMessageIndicator(len(self.messages))
+		debug("Delete message; {} remaining.".format(len(self.messages)))
 
