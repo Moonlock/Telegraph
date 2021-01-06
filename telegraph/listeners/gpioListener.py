@@ -1,7 +1,7 @@
 from threading import Timer
 
-from RPi import GPIO
 from telegraph.common.commonFunctions import debug, fatal
+import pigpio
 
 
 KEY_CHANNEL = 4
@@ -15,36 +15,41 @@ GREEN=19
 class GpioListener:
 
 	def __init__(self):
-		self.pwm = None
-
 		self.pressCallback = lambda: fatal("Press callback not defined.")
 		self.releaseCallback = lambda: fatal("Release callback not defined.")
+
+		self.pi = pigpio.pi()
 
 		self.setupCallbacks()
 
 	def setupCallbacks(self):
 
-		def innerCallback(channel):
-			if GPIO.input(channel) == 0:
+		def innerCallback(channel, level, tick):
+			if level == 0:
 				self.pressCallback()
 			else:
 				self.releaseCallback()
 
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(KEY_CHANNEL, GPIO.IN)
-		GPIO.add_event_detect(KEY_CHANNEL, GPIO.BOTH, callback=innerCallback, bouncetime=20)
+		self.pi.set_mode(KEY_CHANNEL, pigpio.INPUT)
+		self.pi.callback(KEY_CHANNEL, pigpio.EITHER_EDGE, callback=innerCallback, bouncetime=20)
 
-		GPIO.setup(LED_CHANNEL, GPIO.OUT, initial=False)
-		GPIO.setup(RED, GPIO.OUT, initial=False)
-		GPIO.setup(GREEN, GPIO.OUT, initial=False)
-		GPIO.setup(PLAY_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(DELETE_BUTTON_CHANNEL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		self.pi.set_mode(LED_CHANNEL, pigpio.OUTPUT)
+		self.pi.set_mode(RED, pigpio.OUTPUT)
+		self.pi.set_mode(GREEN, pigpio.OUTPUT)
+		self.pi.write(LED_CHANNEL, 0)
+		self.pi.write(RED, 0)
+		self.pi.write(GREEN, 0)
+
+		self.pi.set_mode(PLAY_BUTTON_CHANNEL, pigpio.INPUT)
+		self.pi.set_mode(DELETE_BUTTON_CHANNEL, pigpio.INPUT)
+		self.pi.set_pull_up_down(PLAY_BUTTON_CHANNEL, pigpio.PUD_UP)
+		self.pi.set_pull_up_down(DELETE_BUTTON_CHANNEL, pigpio.PUD_UP)
 
 	def updateMessageIndicator(self, messages):
 		if messages:
-			GPIO.output(LED_CHANNEL, GPIO.HIGH)
+			self.pi.write(LED_CHANNEL, 1)
 		else:
-			GPIO.output(LED_CHANNEL, GPIO.LOW)
+			self.pi.write(LED_CHANNEL, 0)
 
 	def resetClientCallback(self, pressCallback, releaseCallback):
 		self.pressCallback = pressCallback
@@ -52,33 +57,31 @@ class GpioListener:
 
 	def startMessage(self):
 		self.turnOffRgbLed()
-		GPIO.output(RED, GPIO.HIGH)
-		self.pwm = GPIO.PWM(GREEN, 100)
-		self.pwm.start(25)
+		self.pi.write(RED, 1)
+		self.pi.hardware_PWM(GREEN, 100, 250000)
 
 	def error(self, message):
 		debug(message)
 		self.turnOffRgbLed()
-		GPIO.output(RED, GPIO.HIGH)
+		self.pi.write(RED, 1)
 		Timer(2, self.turnOffRgbLed).start()
 
 	def sendSuccess(self):
 		self.turnOffRgbLed()
-		GPIO.output(GREEN, GPIO.HIGH)
+		self.pi.write(GREEN, 1)
 		Timer(2, self.turnOffRgbLed).start()
 
 	def turnOffRgbLed(self):
-		if self.pwm:
-			self.pwm.stop()
-		GPIO.output(RED, GPIO.LOW)
-		GPIO.output(GREEN, GPIO.LOW)
+		self.pi.hardware_PWM(GREEN, 100, 0)
+		self.pi.write(RED, 0)
+		self.pi.write(GREEN, 0)
 
 	def setServer(self, server):
 		# Can probably lower the bouncetime when I get a decent button.
-		GPIO.add_event_detect(PLAY_BUTTON_CHANNEL, GPIO.FALLING, callback=server.playMessage, bouncetime=1000)
-		GPIO.add_event_detect(DELETE_BUTTON_CHANNEL, GPIO.FALLING, callback=server.deleteMessage, bouncetime=1000)
+		self.pi.callback(PLAY_BUTTON_CHANNEL, pigpio.FALLING_EDGE, callback=server.playMessage, bouncetime=200)
+		self.pi.callback(DELETE_BUTTON_CHANNEL, pigpio.FALLING_EDGE, callback=server.deleteMessage, bouncetime=200)
 
 	def cleanUp(self):
-		GPIO.cleanup()
+		self.pi.stop()
 
 
