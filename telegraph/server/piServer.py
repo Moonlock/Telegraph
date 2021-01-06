@@ -50,7 +50,7 @@ class PiServer(Server):
 		elif not self.playMessage(message=parsedMsg):
 			self.unplayedMessages.append(parsedMsg)
 
-	def playMessage(self, channel=None, message=None):
+	def playMessage(self, channel=None, level=None, tick=None, message=None):
 
 		def innerPlayMessage(message):
 			prevIsChar = False
@@ -99,7 +99,7 @@ class PiServer(Server):
 	def playWordSpace(self):
 		sleep(self.timeUnit*7)
 
-	def deleteMessage(self, channel=None):
+	def deleteMessage(self, channel=None, level=None, tick=None):
 		if self.messages:
 			self.messages.pop(0)
 			self.listener.updateMessageIndicator(len(self.messages))

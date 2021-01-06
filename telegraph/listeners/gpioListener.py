@@ -31,7 +31,8 @@ class GpioListener:
 				self.releaseCallback()
 
 		self.pi.set_mode(KEY_CHANNEL, pigpio.INPUT)
-		self.pi.callback(KEY_CHANNEL, pigpio.EITHER_EDGE, callback=innerCallback, bouncetime=20)
+		self.pi.callback(KEY_CHANNEL, pigpio.EITHER_EDGE, innerCallback)
+		self.pi.set_glitch_filter(KEY_CHANNEL, 10000)
 
 		self.pi.set_mode(LED_CHANNEL, pigpio.OUTPUT)
 		self.pi.set_mode(RED, pigpio.OUTPUT)
@@ -78,8 +79,10 @@ class GpioListener:
 
 	def setServer(self, server):
 		# Can probably lower the bouncetime when I get a decent button.
-		self.pi.callback(PLAY_BUTTON_CHANNEL, pigpio.FALLING_EDGE, callback=server.playMessage, bouncetime=200)
-		self.pi.callback(DELETE_BUTTON_CHANNEL, pigpio.FALLING_EDGE, callback=server.deleteMessage, bouncetime=200)
+		self.pi.callback(PLAY_BUTTON_CHANNEL, pigpio.FALLING_EDGE, server.playMessage)
+		self.pi.callback(DELETE_BUTTON_CHANNEL, pigpio.FALLING_EDGE, server.deleteMessage)
+		self.pi.set_glitch_filter(PLAY_BUTTON_CHANNEL, 100000)
+		self.pi.set_glitch_filter(DELETE_BUTTON_CHANNEL, 100000)
 
 	def cleanUp(self):
 		self.pi.stop()
