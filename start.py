@@ -10,7 +10,7 @@ from telegraph.common.commonFunctions import fatal
 
 
 try:
-	from RPi import GPIO
+	import pigpio
 	from telegraph.listeners.gpioListener import GpioListener
 	from telegraph.server.piServer import PiServer
 	usingGpio = True

@@ -9,6 +9,7 @@ import pigpio
 
 BUZZER_CHANNEL = 18
 FREQUENCY = 900
+DUTY_CYCLE = 500000
 
 class PiServer(Server):
 
@@ -81,12 +82,12 @@ class PiServer(Server):
 		return True
 
 	def playDit(self):
-		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 500000)
+		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, DUTY_CYCLE)
 		sleep(self.timeUnit)
 		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 0)
 
 	def playDah(self):
-		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 500000)
+		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, DUTY_CYCLE)
 		sleep(self.timeUnit * 3)
 		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 0)
 
