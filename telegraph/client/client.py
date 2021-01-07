@@ -1,5 +1,4 @@
 from math import ceil
-from time import time
 import socket
 
 from telegraph.client.destinationConfig import DestinationConfig
@@ -24,8 +23,6 @@ class Client:
 
 		self.message = []
 		self.initTimings = []
-		self.lastPress = 0
-		self.lastRelease = 0
 		self.timeUnit = 0
 		self.pressed = False
 
@@ -42,29 +39,13 @@ class Client:
 			killed.wait()
 		self.listener.cleanUp()
 
-	def timePress(self):
-		self.lastRelease = time()
-		pressTime = (self.lastRelease - self.lastPress) * 1000
-		debug("Press: " + str(int(pressTime)))
-		return pressTime
-
-	def timeRelease(self):
-		self.lastPress = time()
-		releaseTime = (self.lastPress - self.lastRelease) * 1000
-		debug("Release: " + str(int(releaseTime)))
-		return releaseTime
-
-	def initHandlePress(self):
-		releaseTimeMs = self.timeRelease()
-
-		self.initTimings.append(releaseTimeMs)
+	def initHandlePress(self, releaseTimeUsec):
+		self.initTimings.append(releaseTimeUsec)
 		if len(self.initTimings) == 10:
 			self.checkStart()
 
-	def initHandleRelease(self):
-		pressTimeMs = self.timePress()
-
-		self.initTimings.append(pressTimeMs)
+	def initHandleRelease(self, pressTimeUsec):
+		self.initTimings.append(pressTimeUsec)
 		if len(self.initTimings) == 10:
 			self.checkStart()
 
@@ -79,7 +60,7 @@ class Client:
 
 		self.timeUnit = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
 		self.initTimings.clear()
-		debug("Starting with timeunit " + str(self.timeUnit))
+		debug("Starting with timeunit " + str(int(self.timeUnit/1000)) + "ms")
 		self.startMessage()
 
 
@@ -96,24 +77,20 @@ class Client:
 		self.message.append(Symbol.DIT)
 		self.message.append(Symbol.DAH)
 
-	def handlePress(self):
-		releaseTimeMs = self.timeRelease()
-
-		if releaseTimeMs > 5*self.timeUnit:
+	def handlePress(self, releaseTimeUsec):
+		if releaseTimeUsec > 5*self.timeUnit:
 			self.message.append(Symbol.WORD_SPACE)
 			if self.waitingForDest and len(self.message) > INIT_MESSAGE_SYMBOL_LENGTH:
 				self.dests = self.parseDestination()
 				return
 
-		elif releaseTimeMs >= 2*self.timeUnit:
+		elif releaseTimeUsec >= 2*self.timeUnit:
 			self.message.append(Symbol.CHAR_SPACE)
 
 		self.checkFinish()
 
-	def handleRelease(self):
-		pressTimeMs = self.timePress()
-
-		if pressTimeMs < 2*self.timeUnit:
+	def handleRelease(self, pressTimeUsec):
+		if pressTimeUsec < 2*self.timeUnit:
 			self.message.append(Symbol.DIT)
 		else:
 			self.message.append(Symbol.DAH)

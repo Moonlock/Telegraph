@@ -16,6 +16,7 @@ DUTY_CYCLE = 250000
 FREQUENCY = 100
 
 USEC_PER_MSEC = 1000
+TICK_ROLLOVER = 4294967296
 
 
 class GpioListener:
@@ -26,18 +27,26 @@ class GpioListener:
 
 		self.pi = pigpio.pi()
 
+		self.lastTick = 0
 		self.setupCallbacks()
 
+	def keyCallback(self, channel, level, tick):
+		elapsedTime = tick - self.lastTick
+		if elapsedTime < 0:
+			elapsedTime += TICK_ROLLOVER
+
+		if level == 0:
+			debug("Release: " + str(int(elapsedTime/1000)))
+			self.pressCallback(elapsedTime)
+		else:
+			debug("Press: " + str(int(elapsedTime/1000)))
+			self.releaseCallback(elapsedTime)
+
+		self.lastTick = tick
+
 	def setupCallbacks(self):
-
-		def innerCallback(channel, level, tick):
-			if level == 0:
-				self.pressCallback()
-			else:
-				self.releaseCallback()
-
 		self.pi.set_mode(KEY_CHANNEL, pigpio.INPUT)
-		self.pi.callback(KEY_CHANNEL, pigpio.EITHER_EDGE, innerCallback)
+		self.pi.callback(KEY_CHANNEL, pigpio.EITHER_EDGE, self.keyCallback)
 		self.pi.set_glitch_filter(KEY_CHANNEL, 10 * USEC_PER_MSEC)
 
 		self.pi.set_mode(MESSAGE_LED_CHANNEL, pigpio.OUTPUT)
