@@ -3,12 +3,14 @@ from telegraph.common.commonFunctions import fatal
 from telegraph.learnMorse.testModes.randomLettersMode import RandomLettersMode
 from telegraph.learnMorse.testModes.randomLettersSeparateMode import RandomLettersSeparateMode
 from telegraph.learnMorse.testModes.textMode import TextMode
+from telegraph.learnMorse.testModes.sendMorseMode import morseTest
 
 
 class TestMode(Enum):
 	RANDOM = (0, "Random Letters", RandomLettersMode)
 	RANDOM_SEPARATE = (1, "Random Letters (One at a time)", RandomLettersSeparateMode)
 	TEXT = (2, "Text (No numbers or punctuation)", TextMode)
+	SEND = (3, "Send letters", morseTest)
 
 	def __init__(self, index, description, cls):
 		self.index = index
@@ -23,6 +25,8 @@ class TestMode(Enum):
 			return cls.RANDOM_SEPARATE
 		elif index == 2:
 			return cls.TEXT
+		elif index == 3:
+			return cls.SEND
 		else:
 			fatal("Invalid Selection")
 
