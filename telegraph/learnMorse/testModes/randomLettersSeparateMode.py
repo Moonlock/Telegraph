@@ -38,7 +38,6 @@ class RandomLettersSeparateMode(TestModeInterface):
 		for _ in range(numChars):
 			self.chars.append(morse.popitem(False))
 
-		self.testTime = testTime
 		self.timer = Timer(testTime, self.stopTest)
 
 		sleep(2)
