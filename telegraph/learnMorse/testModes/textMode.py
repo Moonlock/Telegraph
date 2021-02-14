@@ -61,9 +61,9 @@ class TextMode(TestModeInterface):
 
 	def getText(self):
 		textFiles = os.listdir(TEXT_FILES_PATH)
-		chosenFile = random.choice(textFiles)
+		self.chosenFile = random.choice(textFiles)
 
-		with open(TEXT_FILES_PATH + chosenFile) as file:
+		with open(TEXT_FILES_PATH + self.chosenFile) as file:
 			text = file.read()
 		return text;
 
@@ -127,5 +127,6 @@ class TextMode(TestModeInterface):
 		diff = difflib.SequenceMatcher(None, master, response, autojunk=False)
 		score = diff.ratio() * 100
 		print()
+		print(self.chosenFile)
 		print("Score: " + "{:.2f}".format(score) + "%")
 
