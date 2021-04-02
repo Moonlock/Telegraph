@@ -22,7 +22,7 @@ class Mode(Enum):
 	INIT = 0
 	TEST = 1
 
-class morseTest:
+class SendMode:
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
 		signal.signal(signal.SIGINT, self.handleSigInt)
