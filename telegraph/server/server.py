@@ -11,7 +11,7 @@ SECONDS_PER_MINUTE = 60
 class Server:
 
 	def __init__(self, port, wpm, listener, killed, sendInProgress):
-		self.timeUnit = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
+		self.timeUnitSec = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
 
 		self.unplayedMessages = []
 		self.sendInProgress = sendInProgress

@@ -83,22 +83,22 @@ class PiServer(Server):
 
 	def playDit(self):
 		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, DUTY_CYCLE)
-		sleep(self.timeUnit)
+		sleep(self.timeUnitUsec)
 		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 0)
 
 	def playDah(self):
 		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, DUTY_CYCLE)
-		sleep(self.timeUnit * 3)
+		sleep(self.timeUnitUsec * 3)
 		self.pi.hardware_PWM(BUZZER_CHANNEL, FREQUENCY, 0)
 
 	def playSymbolSpace(self):
-		sleep(self.timeUnit)
+		sleep(self.timeUnitUsec)
 
 	def playCharSpace(self):
-		sleep(self.timeUnit*3)
+		sleep(self.timeUnitUsec*3)
 
 	def playWordSpace(self):
-		sleep(self.timeUnit*7)
+		sleep(self.timeUnitUsec*7)
 
 	def deleteMessage(self, channel=None, level=None, tick=None):
 		if self.messages:

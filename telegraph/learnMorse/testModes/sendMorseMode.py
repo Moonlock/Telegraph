@@ -86,13 +86,13 @@ class SendMode:
 
 	def handlePress(self, releaseTimeUsec):
 		if self.userSymbols:
-			if releaseTimeUsec > 5*self.timeUnit:
+			if releaseTimeUsec > 5*self.timeUnitUsec:
 				self.userSymbols.append(Symbol.WORD_SPACE)
-			elif releaseTimeUsec >= 2*self.timeUnit:
+			elif releaseTimeUsec >= 2*self.timeUnitUsec:
 				self.userSymbols.append(Symbol.CHAR_SPACE)
 
 	def handleRelease(self, pressTimeUsec):
-		if pressTimeUsec < 2*self.timeUnit:
+		if pressTimeUsec < 2*self.timeUnitUsec:
 			self.userSymbols.append(Symbol.DIT)
 		else:
 			self.userSymbols.append(Symbol.DAH)
@@ -106,9 +106,9 @@ class SendMode:
 			self.initTimings.pop(0)
 			return
 
-		self.timeUnit = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
+		self.timeUnitUsec = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
 		self.initTimings.clear()
-		debug("Starting with timeunit " + str(int(self.timeUnit/1000)) + "ms")
+		debug("Starting with timeunit " + str(int(self.timeUnitUsec/1000)) + "ms")
 		self.pi.event_trigger(KEY_CHANNEL)
 
 	def initialize(self):
@@ -124,7 +124,7 @@ class SendMode:
 
 	def startTest(self):
 		self.mode = Mode.TEST
-		timeout = 5*self.timeUnit / 1000000
+		timeout = 5*self.timeUnitUsec / 1000000
 
 		correct = 0
 		incorrect = 0

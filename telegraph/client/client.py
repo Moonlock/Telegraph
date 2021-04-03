@@ -23,7 +23,7 @@ class Client:
 
 		self.message = []
 		self.initTimings = []
-		self.timeUnit = 0
+		self.timeUnitUsec = 0
 		self.pressed = False
 
 		self.destConfig = DestinationConfig(self.callSignError)
@@ -58,9 +58,9 @@ class Client:
 			self.initTimings.pop(0)
 			return
 
-		self.timeUnit = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
+		self.timeUnitUsec = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
 		self.initTimings.clear()
-		debug("Starting with timeunit " + str(int(self.timeUnit/1000)) + "ms")
+		debug("Starting with timeunit " + str(int(self.timeUnitUsec/1000)) + "ms")
 		self.startMessage()
 
 
@@ -78,19 +78,19 @@ class Client:
 		self.message.append(Symbol.DAH)
 
 	def handlePress(self, releaseTimeUsec):
-		if releaseTimeUsec > 5*self.timeUnit:
+		if releaseTimeUsec > 5*self.timeUnitUsec:
 			self.message.append(Symbol.WORD_SPACE)
 			if self.waitingForDest and len(self.message) > INIT_MESSAGE_SYMBOL_LENGTH:
 				self.dests = self.parseDestination()
 				return
 
-		elif releaseTimeUsec >= 2*self.timeUnit:
+		elif releaseTimeUsec >= 2*self.timeUnitUsec:
 			self.message.append(Symbol.CHAR_SPACE)
 
 		self.checkFinish()
 
 	def handleRelease(self, pressTimeUsec):
-		if pressTimeUsec < 2*self.timeUnit:
+		if pressTimeUsec < 2*self.timeUnitUsec:
 			self.message.append(Symbol.DIT)
 		else:
 			self.message.append(Symbol.DAH)
