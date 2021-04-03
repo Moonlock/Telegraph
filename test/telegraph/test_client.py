@@ -19,7 +19,7 @@ INIT_MESSAGE = [s.DAH, s.DIT, s.DAH, s.DIT, s.DAH]
 
 class TestSingleDestination(unittest.TestCase):
 
-	@mock.patch('telegraph.listeners.keyboardListener.KeyboardListener')
+	@mock.patch('telegraph.listeners.listenerInterface.ListenerInterface')
 	def setUp(self, mock_listener):
 		self.mock_listener_instance = mock_listener.instance
 		self.client = Client(False, '1.1.1.1', '8000', self.mock_listener_instance, None, Event(), True)
@@ -55,7 +55,7 @@ class TestSingleDestination(unittest.TestCase):
 
 class TestMultipleDestinations(unittest.TestCase):
 
-	@mock.patch('telegraph.listeners.keyboardListener.KeyboardListener')
+	@mock.patch('telegraph.listeners.listenerInterface.ListenerInterface')
 	def setUp(self, mock_listener):
 		self.client = Client(True, None, None, mock_listener, None, Event(), True)
 		self.client.destConfig = DestinationConfig(self.client.callSignError,

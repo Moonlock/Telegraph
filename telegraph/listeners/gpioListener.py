@@ -19,7 +19,7 @@ USEC_PER_MSEC = 1000
 TICK_ROLLOVER = 4294967296
 
 
-class GpioListener:
+class GpioListener(ListenerInterface):
 
 	def __init__(self):
 		self.pressCallback = lambda: fatal("Press callback not defined.")

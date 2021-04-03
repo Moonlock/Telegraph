@@ -13,7 +13,7 @@ import termios
 USEC_PER_SECOND = 1000000
 
 
-class KeyboardListener:
+class KeyboardListener(ListenerInterface):
 
 	def __init__(self):
 		self.pressCallback = lambda: fatal("Press callback not defined.")
