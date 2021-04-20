@@ -108,7 +108,7 @@ class TextMode(TestModeInterface):
 			if pos == len(text):
 				pos = 0
 
-		common.createFile(fileList, TEST_FILE)
+		common.concatAudioFiles(fileList, TEST_FILE)
 		proc = Popen(['play', '-q', TEST_FILE])
 
 		#Remove trailing whitespace

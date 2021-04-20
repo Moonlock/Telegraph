@@ -76,7 +76,7 @@ class KeyboardServer(Server):
 			prevIsChar = isChar
 
 		filename = "{}message-{}.sox".format(SOUND_FILES_PATH, self.nextMessage)
-		common.createFile(msgFileList, filename)
+		common.concatAudioFiles(msgFileList, filename)
 
 	def playMessage(self, channel=None, message=None):
 		if self.messageProcess and self.messageProcess.poll() is None:

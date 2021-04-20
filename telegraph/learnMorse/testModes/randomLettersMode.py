@@ -95,7 +95,7 @@ class RandomLettersMode(TestModeInterface):
 			timeSpent += self.wordSpace
 			self.masterList.append(' ')
 
-		common.createFile(fileList, TEST_FILE)
+		common.concatAudioFiles(fileList, TEST_FILE)
 		proc = Popen(['play', '-q', TEST_FILE])
 
 		#Remove final word space

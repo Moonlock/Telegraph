@@ -46,7 +46,7 @@ def writeConfig(filename, parser):
 	print("Updated " + filename + ".")
 
 # sox fails if given too many files, so build final file in chunks
-def createFile(fileList, filename):
+def concatAudioFiles(fileList, filename):
 	partialFile = ""
 	for i in range((len(fileList) + 999) // 1000):
 		start = i * 1000

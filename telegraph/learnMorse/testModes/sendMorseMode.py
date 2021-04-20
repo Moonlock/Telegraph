@@ -11,6 +11,7 @@ import pigpio
 
 COUNTS_PER_WORD = 50
 SECONDS_PER_MINUTE = 60
+USEC_PER_MSEC = 1000
 
 KEY_CHANNEL = 4
 TICK_ROLLOVER = 4294967296
@@ -63,7 +64,7 @@ class SendMode:
 			elapsedTime += TICK_ROLLOVER
 
 		event = "Release" if level == 0 else "Press"
-		debug("{}: {}".format(event, int(elapsedTime/1000)))
+		debug("{}: {}".format(event, int(elapsedTime/USEC_PER_MSEC)))
 		self.initTimings.append(elapsedTime)
 		if len(self.initTimings) == 10:
 			self.checkStart()
@@ -76,10 +77,10 @@ class SendMode:
 			elapsedTime += TICK_ROLLOVER
 
 		if level == 0:
-			debug("Release: " + str(int(elapsedTime/1000)))
+			debug("Release: " + str(int(elapsedTime/USEC_PER_MSEC)))
 			self.handlePress(elapsedTime)
 		else:
-			debug("Press: " + str(int(elapsedTime/1000)))
+			debug("Press: " + str(int(elapsedTime/USEC_PER_MSEC)))
 			self.handleRelease(elapsedTime)
 
 		self.lastTick = tick
@@ -108,13 +109,13 @@ class SendMode:
 
 		self.timeUnitUsec = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
 		self.initTimings.clear()
-		debug("Starting with timeunit " + str(int(self.timeUnitUsec/1000)) + "ms")
+		debug("Starting with timeunit " + str(int(self.timeUnitUsec/USEC_PER_MSEC)) + "ms")
 		self.pi.event_trigger(KEY_CHANNEL)
 
 	def initialize(self):
 		self.pi.set_mode(KEY_CHANNEL, pigpio.INPUT)
 		self.pi.callback(KEY_CHANNEL, pigpio.EITHER_EDGE, self.keyCallback)
-		self.pi.set_glitch_filter(KEY_CHANNEL, 10 * 1000)
+		self.pi.set_glitch_filter(KEY_CHANNEL, 10 * USEC_PER_MSEC)
 
 		debug("Waiting for init.  (dah-dit-dah-dit-dah)")
 		self.pi.wait_for_event(KEY_CHANNEL, 600)
