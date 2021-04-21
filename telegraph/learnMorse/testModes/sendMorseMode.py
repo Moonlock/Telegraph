@@ -3,6 +3,7 @@ from threading import Timer
 import random
 import signal
 
+from telegraph.common.clientMode import ClientMode
 from telegraph.common.commonFunctions import debug
 from telegraph.common.symbols import Symbol
 from telegraph.learnMorse.alphabet import morse
@@ -19,10 +20,6 @@ TICK_ROLLOVER = 4294967296
 INIT_MESSAGE_TIME_UNITS = 15
 
 
-class Mode(Enum):
-	INIT = 0
-	TEST = 1
-
 class SendMode:
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
@@ -38,9 +35,9 @@ class SendMode:
 		self.lastTick = 0
 		self.initTimings = []
 
-		self.mode = Mode.INIT
-		self.callbacks = {Mode.INIT: self.initKeyEvent,
-						Mode.TEST: self.testKeyEvent}
+		self.mode = ClientMode.INIT
+		self.callbacks = {ClientMode.INIT: self.initKeyEvent,
+						ClientMode.MAIN: self.testKeyEvent}
 
 		self.timer = Timer(testTime, self.stopTest)
 
@@ -56,34 +53,26 @@ class SendMode:
 		self.running = False
 
 	def keyCallback(self, channel, level, tick):
-		self.callbacks[self.mode](level, tick)
-
-	def initKeyEvent(self, level, tick):
 		elapsedTime = tick - self.lastTick
 		if elapsedTime < 0:
 			elapsedTime += TICK_ROLLOVER
 
 		event = "Release" if level == 0 else "Press"
 		debug("{}: {}".format(event, int(elapsedTime/USEC_PER_MSEC)))
+
+		self.lastTick = tick
+		self.callbacks[self.mode](level, elapsedTime)
+
+	def initKeyEvent(self, level, elapsedTime):
 		self.initTimings.append(elapsedTime)
 		if len(self.initTimings) == 10:
 			self.checkStart()
 
-		self.lastTick = tick
-
-	def testKeyEvent(self, level, tick):
-		elapsedTime = tick - self.lastTick
-		if elapsedTime < 0:
-			elapsedTime += TICK_ROLLOVER
-
+	def testKeyEvent(self, level, elapsedTime):
 		if level == 0:
-			debug("Release: " + str(int(elapsedTime/USEC_PER_MSEC)))
 			self.handlePress(elapsedTime)
 		else:
-			debug("Press: " + str(int(elapsedTime/USEC_PER_MSEC)))
 			self.handleRelease(elapsedTime)
-
-		self.lastTick = tick
 
 	def handlePress(self, releaseTimeUsec):
 		if self.userSymbols:
@@ -109,7 +98,7 @@ class SendMode:
 
 		self.timeUnitUsec = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
 		self.initTimings.clear()
-		debug("Starting with timeunit " + str(int(self.timeUnitUsec/USEC_PER_MSEC)) + "ms")
+		print("Starting with timeunit " + str(int(self.timeUnitUsec/USEC_PER_MSEC)) + "ms")
 		self.pi.event_trigger(KEY_CHANNEL)
 
 	def initialize(self):
@@ -117,15 +106,15 @@ class SendMode:
 		self.pi.callback(KEY_CHANNEL, pigpio.EITHER_EDGE, self.keyCallback)
 		self.pi.set_glitch_filter(KEY_CHANNEL, 10 * USEC_PER_MSEC)
 
-		debug("Waiting for init.  (dah-dit-dah-dit-dah)")
+		print("Waiting for init.  (-.-.-)")
 		self.pi.wait_for_event(KEY_CHANNEL, 600)
-		debug("Received init")
+		print("Received init")
 		self.timer.start()
 		self.startTest()
 
 	def startTest(self):
-		self.mode = Mode.TEST
-		timeout = 5*self.timeUnitUsec / 1000000
+		self.mode = ClientMode.MAIN
+		timeoutSec = 5*self.timeUnitUsec / 1000000
 
 		correct = 0
 		incorrect = 0
@@ -136,7 +125,7 @@ class SendMode:
 			print(char[0])
 
 			while not self.userSymbols or sending:
-				sending = self.pi.wait_for_edge(KEY_CHANNEL, pigpio.EITHER_EDGE, timeout)
+				sending = self.pi.wait_for_edge(KEY_CHANNEL, pigpio.EITHER_EDGE, timeoutSec)
 
 			if self.userSymbols == char[1]:
 				correct += 1

@@ -1,6 +1,7 @@
 from threading import Timer
 
 from telegraph.common.commonFunctions import debug, fatal
+from telegraph.listeners.listenerInterface import ListenerInterface
 import pigpio
 
 
@@ -22,6 +23,8 @@ TICK_ROLLOVER = 4294967296
 class GpioListener(ListenerInterface):
 
 	def __init__(self):
+		super().__init__()
+
 		self.pressCallback = lambda: fatal("Press callback not defined.")
 		self.releaseCallback = lambda: fatal("Release callback not defined.")
 
@@ -35,14 +38,11 @@ class GpioListener(ListenerInterface):
 		if elapsedTime < 0:
 			elapsedTime += TICK_ROLLOVER
 
-		if level == 0:
-			debug("Release: " + str(int(elapsedTime/1000)))
-			self.pressCallback(elapsedTime)
-		else:
-			debug("Press: " + str(int(elapsedTime/1000)))
-			self.releaseCallback(elapsedTime)
+		event = "Release" if level == 0 else "Press"
+		debug("{}: {}".format(event, int(elapsedTime/USEC_PER_MSEC)))
 
 		self.lastTick = tick
+		self.callbacks[self.mode](level == 0, elapsedTime)
 
 	def setupCallbacks(self):
 		self.pi.set_mode(KEY_CHANNEL, pigpio.INPUT)
@@ -66,10 +66,6 @@ class GpioListener(ListenerInterface):
 			self.pi.write(MESSAGE_LED_CHANNEL, 1)
 		else:
 			self.pi.write(MESSAGE_LED_CHANNEL, 0)
-
-	def resetClientCallback(self, pressCallback, releaseCallback):
-		self.pressCallback = pressCallback
-		self.releaseCallback = releaseCallback
 
 	def startMessage(self):
 		self.turnOffRgbLed()

@@ -5,8 +5,8 @@ import sys
 
 from pynput import keyboard
 
-from telegraph.common.commonFunctions import debug
-from telegraph.common.commonFunctions import fatal
+from telegraph.common.commonFunctions import debug, fatal
+from telegraph.listeners.listenerInterface import ListenerInterface
 import termios
 
 
@@ -16,6 +16,8 @@ USEC_PER_SECOND = 1000000
 class KeyboardListener(ListenerInterface):
 
 	def __init__(self):
+		super().__init__()
+
 		self.pressCallback = lambda: fatal("Press callback not defined.")
 		self.releaseCallback = lambda: fatal("Release callback not defined.")
 		self.server = None
@@ -36,7 +38,7 @@ class KeyboardListener(ListenerInterface):
 		def innerPressCallback(key):
 			if key == keyboard.Key.space and not self.telegraphKeyPressed:
 				self.telegraphKeyPressed = True
-				self.pressCallback(self.timeRelease())
+				self.callbacks[self.mode](True, self.timeRelease())
 
 			if key == keyboard.Key.enter:
 				self.server.playMessage()
@@ -52,7 +54,7 @@ class KeyboardListener(ListenerInterface):
 		def innerReleaseCallback(key):
 			if key == keyboard.Key.space:
 				self.telegraphKeyPressed = False
-				self.releaseCallback(self.timePress())
+				self.callbacks[self.mode](False, self.timePress())
 
 			if key == keyboard.Key.ctrl:
 				self.ctrlPressed = False
@@ -66,15 +68,15 @@ class KeyboardListener(ListenerInterface):
 
 	def timePress(self):
 		self.lastRelease = time()
-		pressTime = (self.lastRelease - self.lastPress) * USEC_PER_SECOND
-		debug("Press: " + str(int(pressTime/1000)))
-		return pressTime
+		pressTimeUsec = (self.lastRelease - self.lastPress) * USEC_PER_SECOND
+		debug("Press: " + str(int(pressTimeUsec/1000)))
+		return pressTimeUsec
 
 	def timeRelease(self):
 		self.lastPress = time()
-		releaseTime = (self.lastPress - self.lastRelease) * USEC_PER_SECOND
-		debug("Release: " + str(int(releaseTime/1000)))
-		return releaseTime
+		releaseTimeUsec = (self.lastPress - self.lastRelease) * USEC_PER_SECOND
+		debug("Release: " + str(int(releaseTimeUsec/1000)))
+		return releaseTimeUsec
 
 	def startMessage(self):
 		print("Start message")
@@ -88,9 +90,8 @@ class KeyboardListener(ListenerInterface):
 	def updateMessageIndicator(self, messages):
 		print("Messages: " + str(messages) + ".")
 
-	def resetClientCallback(self, pressCallback, releaseCallback):
-		self.pressCallback = pressCallback
-		self.releaseCallback = releaseCallback
+	def setClientCallback(self, initCallback, mainCallback):
+		super().setClientCallback(initCallback, mainCallback)
 
 		self.clientConfigured = True
 		self.checkReady()

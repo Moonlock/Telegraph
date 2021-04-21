@@ -41,11 +41,11 @@ class KeyboardServer(Server):
 		common.deleteFiles(SOUND_FILES_PATH, "server-", ".sox")
 
 	def createAudioFiles(self):
-		Popen(['sox', '-n', DIT_FILE, 'synth', str(self.timeUnit), 'sin', '900'])
-		Popen(['sox', '-n', DAH_FILE, 'synth', str(3*self.timeUnit), 'sin', '900'])
-		Popen(['sox', '-n', SYMBOL_SPACE_FILE, 'trim', '0', str(self.timeUnit)])
-		Popen(['sox', '-n', CHAR_SPACE_FILE, 'trim', '0', str(3*self.timeUnit)])
-		Popen(['sox', '-n', WORD_SPACE_FILE, 'trim', '0', str(7*self.timeUnit)])
+		Popen(['sox', '-n', DIT_FILE, 'synth', str(self.timeUnitSec), 'sin', '900'])
+		Popen(['sox', '-n', DAH_FILE, 'synth', str(3*self.timeUnitSec), 'sin', '900'])
+		Popen(['sox', '-n', SYMBOL_SPACE_FILE, 'trim', '0', str(self.timeUnitSec)])
+		Popen(['sox', '-n', CHAR_SPACE_FILE, 'trim', '0', str(3*self.timeUnitSec)])
+		Popen(['sox', '-n', WORD_SPACE_FILE, 'trim', '0', str(7*self.timeUnitSec)])
 
 		# First second or so seems to get cut off on the Pi, so add 2 seconds of silence to the start
 		Popen(['sox', '-n', INIT_SPACE_FILE, 'trim', '0', '2'])

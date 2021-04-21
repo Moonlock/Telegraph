@@ -2,6 +2,7 @@ from math import ceil
 import socket
 
 from telegraph.client.destinationConfig import DestinationConfig
+from telegraph.common.clientMode import ClientMode
 from telegraph.common.commonFunctions import debug
 from telegraph.common.symbols import Symbol
 import termios
@@ -28,10 +29,8 @@ class Client:
 
 		self.destConfig = DestinationConfig(self.callSignError)
 
-		self.pressCallback = self.initHandlePress
-		self.releaseCallback = self.initHandleRelease
 		self.listener = listener
-		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
+		self.listener.setClientCallback(self.initKeyEvent, self.mainKeyEvent)
 
 		self.sendInProgress = sendInProgress
 
@@ -39,15 +38,16 @@ class Client:
 			killed.wait()
 		self.listener.cleanUp()
 
-	def initHandlePress(self, releaseTimeUsec):
-		self.initTimings.append(releaseTimeUsec)
+	def initKeyEvent(self, pressed, elapsedTime):
+		self.initTimings.append(elapsedTime)
 		if len(self.initTimings) == 10:
 			self.checkStart()
 
-	def initHandleRelease(self, pressTimeUsec):
-		self.initTimings.append(pressTimeUsec)
-		if len(self.initTimings) == 10:
-			self.checkStart()
+	def mainKeyEvent(self, pressed, elapsedTime):
+		if pressed:
+			self.handlePress(elapsedTime)
+		else:
+			self.handleRelease(elapsedTime)
 
 	def checkStart(self):
 		dahs = self.initTimings[1::4]
@@ -68,7 +68,7 @@ class Client:
 		self.listener.startMessage()
 		self.sendInProgress.set()
 		self.addInitialization()
-		self.listener.resetClientCallback(self.handlePress, self.handleRelease)
+		self.listener.setMode(ClientMode.MAIN)
 
 	def addInitialization(self):
 		self.message.append(Symbol.DAH)
@@ -120,7 +120,7 @@ class Client:
 		self.listener.error(message + ": Canceling message.")
 		self.sendInProgress.clear()
 		self.message.clear()
-		self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
+		self.listener.setMode(ClientMode.INIT)
 
 	def checkFinish(self):
 		if self.message[-5:] == END_MESSAGE:
@@ -130,7 +130,7 @@ class Client:
 				self.dests = None
 
 			self.sendInProgress.clear()
-			self.listener.resetClientCallback(self.initHandlePress, self.initHandleRelease)
+			self.listener.setMode(ClientMode.INIT)
 
 	def sendMessage(self):
 		for dest in self.dests:

@@ -4,6 +4,7 @@ import unittest
 
 from telegraph.client.client import Client
 from telegraph.client.destinationConfig import DestinationConfig
+from telegraph.common.clientMode import ClientMode
 from telegraph.common.symbols import Symbol as s
 
 
@@ -29,14 +30,12 @@ class TestSingleDestination(unittest.TestCase):
 		self.assertFalse(self.client.message)
 
 		init = [SYM_SPACE, DAH, SYM_SPACE, DIT, SYM_SPACE, DAH, SYM_SPACE, DIT, SYM_SPACE, DAH]
-		inputSequence(init, self.client.initHandlePress, self.client.initHandleRelease)
+		inputSequence(init, self.client.initKeyEvent)
 
 		self.assertEqual(DIT, self.client.timeUnitUsec)
 		self.assertEqual(INIT_MESSAGE, self.client.message)
 
-		calls = [mock.call(self.client.initHandlePress, self.client.initHandleRelease),
-				mock.call(self.client.handlePress, self.client.handleRelease)]
-		self.mock_listener_instance.resetClientCallback.assert_has_calls(calls)
+		self.mock_listener_instance.setMode.assert_called_with(ClientMode.MAIN)
 
 	@mock.patch('telegraph.client.client.socket')
 	def testSend(self, mock_socket):
@@ -45,12 +44,12 @@ class TestSingleDestination(unittest.TestCase):
 		self.client.timeUnitUsec = DIT
 
 		end = [WORD_SPACE, DIT, SYM_SPACE, DAH, SYM_SPACE, DIT, SYM_SPACE, DAH, SYM_SPACE, DIT]
-		inputSequence(end, self.client.handlePress, self.client.handleRelease)
+		inputSequence(end, self.client.mainKeyEvent)
 
 		instance = mock_socket.socket.return_value
 		instance.connect.assert_called_with(('1.1.1.1', 8000))
 		self.assertTrue(instance.sendall.called)
-		self.mock_listener_instance.resetClientCallback.assert_called_with(self.client.initHandlePress, self.client.initHandleRelease)
+		self.mock_listener_instance.setMode.assert_called_with(ClientMode.INIT)
 
 
 class TestMultipleDestinations(unittest.TestCase):
@@ -75,7 +74,7 @@ class TestMultipleDestinations(unittest.TestCase):
 			DAH, SYM_SPACE, DAH, SYM_SPACE, DAH, CHAR_SPACE,
 			DAH, SYM_SPACE, DIT, WORD_SPACE]
 
-		inputSequence(callsign, self.client.handlePress, self.client.handleRelease)
+		inputSequence(callsign, self.client.mainKeyEvent)
 		self.assertEqual([self.moonlockEndpoint], self.client.dests)
 
 	def testIncorrectCallsignCancelsMessage(self):
@@ -85,7 +84,7 @@ class TestMultipleDestinations(unittest.TestCase):
 
 		callsign = [WORD_SPACE, DAH, SYM_SPACE, DAH, WORD_SPACE]
 
-		inputSequence(callsign, self.client.handlePress, self.client.handleRelease)
+		inputSequence(callsign, self.client.mainKeyEvent)
 		self.assertEqual([], self.client.dests)
 		self.assertEqual([], self.client.message)
 
@@ -101,11 +100,11 @@ class TestMultipleDestinations(unittest.TestCase):
 			DIT, SYM_SPACE, DIT, SYM_SPACE, DAH, CHAR_SPACE,
 			DIT, SYM_SPACE, DAH, SYM_SPACE, DAH, SYM_SPACE, DIT, WORD_SPACE]
 
-		inputSequence(callsign, self.client.handlePress, self.client.handleRelease)
+		inputSequence(callsign, self.client.mainKeyEvent)
 		self.assertEqual([self.moonlockEndpoint, self.muskratEndpoint], self.client.dests)
 
 		end = [SYM_SPACE, DIT, SYM_SPACE, DAH, SYM_SPACE, DIT, SYM_SPACE, DAH, SYM_SPACE, DIT]
-		inputSequence(end, self.client.handlePress, self.client.handleRelease)
+		inputSequence(end, self.client.mainKeyEvent)
 
 		instance = mock_socket.socket.return_value
 		self.assertEqual(2, instance.connect.call_count)
@@ -116,13 +115,13 @@ class TestMultipleDestinations(unittest.TestCase):
 		])
 
 
-def inputSequence(sequence, pressCallback, releaseCallback):
+def inputSequence(sequence, modeCallback):
 	for i in range(len(sequence)//2):
-		pressCallback(sequence[2*i])
-		releaseCallback(sequence[2*i + 1])
+		modeCallback(True, sequence[2*i])
+		modeCallback(False, sequence[2*i + 1])
 
 	if(len(sequence)%2):
-		pressCallback(sequence[-1])
+		modeCallback(True, sequence[-1])
 
 
 if __name__ == "__main__":
