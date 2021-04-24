@@ -1,4 +1,3 @@
-from enum import Enum
 from threading import Timer
 import random
 import signal
@@ -7,11 +6,10 @@ from telegraph.common.clientMode import ClientMode
 from telegraph.common.commonFunctions import debug
 from telegraph.common.symbols import Symbol
 from telegraph.learnMorse.alphabet import morse
+from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface
 import pigpio
 
 
-COUNTS_PER_WORD = 50
-SECONDS_PER_MINUTE = 60
 USEC_PER_MSEC = 1000
 
 KEY_CHANNEL = 4
@@ -20,10 +18,10 @@ TICK_ROLLOVER = 4294967296
 INIT_MESSAGE_TIME_UNITS = 15
 
 
-class SendMode:
+class SendMode(TestModeInterface):
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
-		signal.signal(signal.SIGINT, self.handleSigInt)
+		signal.signal(signal.SIGINT, self.handleSigIntWithTimer)
 
 		self.user = user
 
@@ -43,11 +41,6 @@ class SendMode:
 
 		self.running = True
 		self.initialize()
-
-
-	def handleSigInt(self, sig, frame):
-		self.timer.cancel()
-		self.running = False
 
 	def stopTest(self):
 		self.running = False
@@ -124,7 +117,7 @@ class SendMode:
 			char = random.choice(self.chars)
 			print(char[0])
 
-			while not self.userSymbols or sending:
+			while self.running and (not self.userSymbols or sending):
 				sending = self.pi.wait_for_edge(KEY_CHANNEL, pigpio.EITHER_EDGE, timeoutSec)
 
 			if self.userSymbols == char[1]:
@@ -136,20 +129,4 @@ class SendMode:
 		print("Correct: {}".format(correct))
 		print("Incorrect: {}".format(incorrect))
 		print("Score: {}".format(correct - incorrect))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
