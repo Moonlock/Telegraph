@@ -1,13 +1,10 @@
-from time import time
+from time import time, sleep
 import os
+import pygame
 import signal
-import sys
 
-from pynput import keyboard
-
-from telegraph.common.commonFunctions import debug, fatal
+from telegraph.common.commonFunctions import debug
 from telegraph.listeners.listenerInterface import ListenerInterface
-import termios
 
 
 USEC_PER_SECOND = 1000000
@@ -15,56 +12,45 @@ USEC_PER_SECOND = 1000000
 
 class KeyboardListener(ListenerInterface):
 
-	def __init__(self):
+	def __init__(self, handleSigInt):
 		super().__init__()
-
-		self.pressCallback = lambda: fatal("Press callback not defined.")
-		self.releaseCallback = lambda: fatal("Release callback not defined.")
-		self.server = None
 
 		self.lastPress = 0
 		self.lastRelease = 0
 
-		self.ctrlPressed = False
-		self.telegraphKeyPressed = False
+		signal.signal(signal.SIGINT, handleSigInt)
 
-		self.serverConfigured = False
-		self.clientConfigured = False
-		self.hasStarted = False
+	def start(self):
+		pygame.init()
+		pygame.display.set_mode((800, 600))
 
-		self.oldSettings = termios.tcgetattr(sys.stdin.fileno())
+		running = True
+		while running:
+			for event in pygame.event.get():
 
-	def setupCallbacks(self):
-		def innerPressCallback(key):
-			if key == keyboard.Key.space and not self.telegraphKeyPressed:
-				self.telegraphKeyPressed = True
-				self.callbacks[self.mode](True, self.timeRelease())
+				if event.type == pygame.QUIT:
+					os.kill(os.getpid(), signal.SIGINT)
+					running = False
 
-			if key == keyboard.Key.enter:
-				self.server.playMessage()
-			if key == keyboard.Key.delete or key == keyboard.Key.backspace:
-				self.server.deleteMessage()
+				elif event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_c and pygame.key.get_mods() & pygame.KMOD_CTRL:
+						os.kill(os.getpid(), signal.SIGINT)
+						running = False
 
-			if key == keyboard.Key.ctrl:
-				self.ctrlPressed = True
-			if self.ctrlPressed and key == keyboard.KeyCode(char='c'):
-				os.kill(os.getpid(), signal.SIGINT)
-				return False
+					elif event.key == pygame.K_SPACE:
+						self.callbacks[self.mode](True, self.timeRelease())
 
-		def innerReleaseCallback(key):
-			if key == keyboard.Key.space:
-				self.telegraphKeyPressed = False
-				self.callbacks[self.mode](False, self.timePress())
+					elif event.key == pygame.K_RETURN:
+						self.server.playMessage()
 
-			if key == keyboard.Key.ctrl:
-				self.ctrlPressed = False
+					elif event.key == pygame.K_BACKSPACE or event.key == pygame.K_DELETE:
+						self.server.deleteMessage()
 
-		newSettings = termios.tcgetattr(sys.stdin.fileno())
-		newSettings[3] = newSettings[3] & ~termios.ECHO
+				elif event.type == pygame.KEYUP:
+					if event.key == pygame.K_SPACE:
+						self.callbacks[self.mode](False, self.timePress())
 
-		termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, newSettings)
-		listener = keyboard.Listener(on_press=innerPressCallback, on_release=innerReleaseCallback)
-		listener.start()
+			sleep(0.010)
 
 	def timePress(self):
 		self.lastRelease = time()
@@ -89,25 +75,4 @@ class KeyboardListener(ListenerInterface):
 
 	def updateMessageIndicator(self, messages):
 		print("Messages: " + str(messages) + ".")
-
-	def setClientCallback(self, initCallback, mainCallback):
-		super().setClientCallback(initCallback, mainCallback)
-
-		self.clientConfigured = True
-		self.checkReady()
-
-	def setServer(self, server):
-		self.server = server
-
-		self.serverConfigured = True
-		self.checkReady()
-
-	def checkReady(self):
-		if not self.hasStarted and self.serverConfigured and self.clientConfigured:
-			self.hasStarted = True
-			self.setupCallbacks()
-
-	def cleanUp(self):
-		termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, self.oldSettings)
-
 

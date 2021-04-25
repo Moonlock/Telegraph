@@ -1,6 +1,6 @@
 from threading import Timer
 
-from telegraph.common.commonFunctions import debug, fatal
+from telegraph.common.commonFunctions import debug
 from telegraph.listeners.listenerInterface import ListenerInterface
 import pigpio
 
@@ -25,13 +25,9 @@ class GpioListener(ListenerInterface):
 	def __init__(self):
 		super().__init__()
 
-		self.pressCallback = lambda: fatal("Press callback not defined.")
-		self.releaseCallback = lambda: fatal("Release callback not defined.")
-
 		self.pi = pigpio.pi()
 
 		self.lastTick = 0
-		self.setupCallbacks()
 
 	def keyCallback(self, channel, level, tick):
 		elapsedTime = tick - self.lastTick
@@ -44,7 +40,7 @@ class GpioListener(ListenerInterface):
 		self.lastTick = tick
 		self.callbacks[self.mode](level == 0, elapsedTime)
 
-	def setupCallbacks(self):
+	def start(self):
 		self.pi.set_mode(KEY_CHANNEL, pigpio.INPUT)
 		self.pi.callback(KEY_CHANNEL, pigpio.EITHER_EDGE, self.keyCallback)
 		self.pi.set_glitch_filter(KEY_CHANNEL, 10 * USEC_PER_MSEC)
@@ -60,6 +56,11 @@ class GpioListener(ListenerInterface):
 		self.pi.set_mode(DELETE_BUTTON_CHANNEL, pigpio.INPUT)
 		self.pi.set_pull_up_down(PLAY_BUTTON_CHANNEL, pigpio.PUD_UP)
 		self.pi.set_pull_up_down(DELETE_BUTTON_CHANNEL, pigpio.PUD_UP)
+
+		self.pi.callback(PLAY_BUTTON_CHANNEL, pigpio.FALLING_EDGE, self.server.playMessage)
+		self.pi.callback(DELETE_BUTTON_CHANNEL, pigpio.FALLING_EDGE, self.server.deleteMessage)
+		self.pi.set_glitch_filter(PLAY_BUTTON_CHANNEL, 100 * USEC_PER_MSEC)
+		self.pi.set_glitch_filter(DELETE_BUTTON_CHANNEL, 100 * USEC_PER_MSEC)
 
 	def updateMessageIndicator(self, messages):
 		if messages:
@@ -87,12 +88,6 @@ class GpioListener(ListenerInterface):
 		self.pi.hardware_PWM(GREEN_LED_CHANNEL, FREQUENCY, 0)
 		self.pi.write(RED_LED_CHANNEL, 0)
 		self.pi.write(GREEN_LED_CHANNEL, 0)
-
-	def setServer(self, server):
-		self.pi.callback(PLAY_BUTTON_CHANNEL, pigpio.FALLING_EDGE, server.playMessage)
-		self.pi.callback(DELETE_BUTTON_CHANNEL, pigpio.FALLING_EDGE, server.deleteMessage)
-		self.pi.set_glitch_filter(PLAY_BUTTON_CHANNEL, 100 * USEC_PER_MSEC)
-		self.pi.set_glitch_filter(DELETE_BUTTON_CHANNEL, 100 * USEC_PER_MSEC)
 
 	def cleanUp(self):
 		self.turnOffRgbLed()

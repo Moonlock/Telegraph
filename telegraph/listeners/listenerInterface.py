@@ -4,6 +4,10 @@ from telegraph.common.commonFunctions import fatal
 class ListenerInterface:
 
 	def __init__(self):
+		self.clientConfigured = False
+		self.serverConfigured = False
+		self.server = None
+
 		self.mode = ClientMode.INIT
 		self.callbacks = {ClientMode.INIT: lambda: fatal("Callback not defined."),
 						ClientMode.MAIN: lambda: fatal("Callback not defined.")}
@@ -29,8 +33,16 @@ class ListenerInterface:
 	def setClientCallback(self, initCallback, mainCallback):
 		self.callbacks = {ClientMode.INIT: initCallback,
 						ClientMode.MAIN: mainCallback}
+		self.clientConfigured = True
 
 	def setServer(self, server):
+		self.serverConfigured = True
+		self.server = server
+
+	def isReady(self):
+		return self.serverConfigured and self.clientConfigured
+
+	def start(self):
 		pass
 
 	def cleanUp(self):

@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 from threading import Thread, Event
+from time import sleep
 import configparser
 import signal
 
@@ -10,7 +11,6 @@ from telegraph.common.commonFunctions import fatal
 
 
 try:
-	import pigpio
 	from telegraph.listeners.gpioListener import GpioListener
 	from telegraph.server.piServer import PiServer
 	usingGpio = True
@@ -27,8 +27,16 @@ if not config.sections():
 if config['Common'].getint('Version') != constants.CONFIG_FILE_VERSION:
 	fatal("Config file version mismatch; please recreate.")
 
+
 killed = Event()
 sendInProgress = Event()
+
+def handleSigInt(sig, frame):
+	killed.set()
+	clientThread.join()
+	serverThread.join()
+
+signal.signal(signal.SIGINT, handleSigInt)
 
 clientConfig = config['Client']
 multiDest = clientConfig.getboolean('Multiple Destinations')
@@ -39,7 +47,7 @@ else:
 	serverAddress = clientConfig['Address']
 	serverPort = clientConfig['Port']
 
-listener = GpioListener() if usingGpio else KeyboardListener()
+listener = GpioListener() if usingGpio else KeyboardListener(handleSigInt)
 server = PiServer if usingGpio else KeyboardServer
 
 clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, killed, sendInProgress))
@@ -52,9 +60,7 @@ wpm = int(serverConfig['WPM'])
 serverThread = Thread(target=server, args=(listenPort, wpm, listener, killed, sendInProgress))
 serverThread.start()
 
-def handleSigInt(sig, frame):
-	killed.set()
-	clientThread.join()
-	serverThread.join()
+while not listener.isReady():
+	sleep(0.1)
+listener.start()
 
-signal.signal(signal.SIGINT, handleSigInt)

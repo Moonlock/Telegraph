@@ -94,10 +94,10 @@ class KeyboardServer(Server):
 		return True
 
 	def deleteMessage(self, channel=None):
-		debug("delete message.")
 		if self.curMessage < self.nextMessage:
 			remove("{}message-{}.sox".format(SOUND_FILES_PATH, self.curMessage))
 			self.curMessage += 1
 
 			self.listener.updateMessageIndicator(self.nextMessage - self.curMessage)
+		debug("Delete message; {} remaining.".format(self.nextMessage - self.curMessage))
 
