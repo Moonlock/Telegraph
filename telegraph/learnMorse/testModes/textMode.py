@@ -53,11 +53,12 @@ class TextMode(TestModeInterface):
 		timeSpent = 0
 		fileList = []
 
-		approxCharsInTest = self.wpm*APPROX_CHARS_PER_WORD * self.testTime/SECONDS_PER_MINUTE
+		lines = self.getText().split('\n')
+		text = '\n'.join(lines[TEXT_START_OFFSET : -END_COPYRIGHT_LENGTH])
 
-		text = self.getText()
-		maxStartingPos = int(len(text) - approxCharsInTest*2 - END_COPYRIGHT_LENGTH)
-		pos = random.choice(range(maxStartingPos - TEXT_START_OFFSET)) + TEXT_START_OFFSET
+		approxCharsInTest = self.wpm*APPROX_CHARS_PER_WORD * self.testTime/SECONDS_PER_MINUTE
+		maxStartingPos = int(len(text) - approxCharsInTest*2)
+		pos = random.choice(range(maxStartingPos))
 
 		while timeSpent < self.testTime:
 
