@@ -19,6 +19,7 @@ TEXT_FILES_PATH = "resources/testData/corpus/"
 
 # Offset in text files to skip copyright/table of contents
 TEXT_START_OFFSET = 200
+END_COPYRIGHT_LENGTH = 400
 
 
 class TextMode(TestModeInterface):
@@ -55,7 +56,7 @@ class TextMode(TestModeInterface):
 		approxCharsInTest = self.wpm*APPROX_CHARS_PER_WORD * self.testTime/SECONDS_PER_MINUTE
 
 		text = self.getText()
-		maxStartingPos = int(len(text) - approxCharsInTest*2)
+		maxStartingPos = int(len(text) - approxCharsInTest*2 - END_COPYRIGHT_LENGTH)
 		pos = random.choice(range(maxStartingPos - TEXT_START_OFFSET)) + TEXT_START_OFFSET
 
 		while timeSpent < self.testTime:
