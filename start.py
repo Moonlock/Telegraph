@@ -8,15 +8,16 @@ import signal
 from telegraph.client import client
 from telegraph.common import constants
 from telegraph.common.commonFunctions import fatal
+from telegraph.server import server
 
 
 try:
 	from telegraph.listeners.gpioListener import GpioListener
-	from telegraph.server.piServer import PiServer
+#	from telegraph.server.piServer import PiServer
 	usingGpio = True
 except ImportError:
 	from telegraph.listeners.keyboardListener import KeyboardListener
-	from telegraph.server.keyboardServer import KeyboardServer
+#	from telegraph.server.keyboardServer import KeyboardServer
 	usingGpio = False
 
 
@@ -48,7 +49,7 @@ else:
 	serverPort = clientConfig['Port']
 
 listener = GpioListener() if usingGpio else KeyboardListener(handleSigInt)
-server = PiServer if usingGpio else KeyboardServer
+#server = PiServer if usingGpio else KeyboardServer
 
 clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, killed, sendInProgress))
 clientThread.start()
@@ -57,7 +58,7 @@ serverConfig = config['Server']
 listenPort = serverConfig['Port']
 wpm = int(serverConfig['WPM'])
 
-serverThread = Thread(target=server, args=(listenPort, wpm, listener, killed, sendInProgress))
+serverThread = Thread(target=server.Server, args=(listenPort, wpm, listener, killed, sendInProgress))
 serverThread.start()
 
 while not listener.isReady():

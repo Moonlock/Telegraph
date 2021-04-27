@@ -1,4 +1,5 @@
 from threading import Timer
+from time import sleep
 
 from telegraph.common.commonFunctions import debug
 from telegraph.listeners.listenerInterface import ListenerInterface
@@ -13,8 +14,12 @@ RED_LED_CHANNEL=13
 GREEN_LED_CHANNEL=19
 
 # Config for green LED PWM when making yellow light
-DUTY_CYCLE = 250000
-FREQUENCY = 100
+GREEN_LED_DUTY_CYCLE = 250000
+GREEN_LED_FREQUENCY = 100
+
+BUZZER_CHANNEL = 18
+BUZZER_FREQUENCY = 900
+BUZZER_DUTY_CYCLE = 500000
 
 USEC_PER_MSEC = 1000
 TICK_ROLLOVER = 4294967296
@@ -52,6 +57,8 @@ class GpioListener(ListenerInterface):
 		self.pi.write(RED_LED_CHANNEL, 0)
 		self.pi.write(GREEN_LED_CHANNEL, 0)
 
+		self.pi.set_mode(BUZZER_CHANNEL, pigpio.OUTPUT)
+
 		self.pi.set_mode(PLAY_BUTTON_CHANNEL, pigpio.INPUT)
 		self.pi.set_mode(DELETE_BUTTON_CHANNEL, pigpio.INPUT)
 		self.pi.set_pull_up_down(PLAY_BUTTON_CHANNEL, pigpio.PUD_UP)
@@ -62,6 +69,11 @@ class GpioListener(ListenerInterface):
 		self.pi.set_glitch_filter(PLAY_BUTTON_CHANNEL, 100 * USEC_PER_MSEC)
 		self.pi.set_glitch_filter(DELETE_BUTTON_CHANNEL, 100 * USEC_PER_MSEC)
 
+	def playTone(self, duration):
+		self.pi.hardware_PWM(BUZZER_CHANNEL, BUZZER_FREQUENCY, BUZZER_DUTY_CYCLE)
+		sleep(duration)
+		self.pi.hardware_PWM(BUZZER_CHANNEL, BUZZER_FREQUENCY, 0)
+
 	def updateMessageIndicator(self, messages):
 		if messages:
 			self.pi.write(MESSAGE_LED_CHANNEL, 1)
@@ -71,7 +83,7 @@ class GpioListener(ListenerInterface):
 	def startMessage(self):
 		self.turnOffRgbLed()
 		self.pi.write(RED_LED_CHANNEL, 1)
-		self.pi.hardware_PWM(GREEN_LED_CHANNEL, FREQUENCY, DUTY_CYCLE)
+		self.pi.hardware_PWM(GREEN_LED_CHANNEL, GREEN_LED_FREQUENCY, GREEN_LED_DUTY_CYCLE)
 
 	def error(self, message):
 		debug(message)
@@ -85,12 +97,13 @@ class GpioListener(ListenerInterface):
 		Timer(2, self.turnOffRgbLed).start()
 
 	def turnOffRgbLed(self):
-		self.pi.hardware_PWM(GREEN_LED_CHANNEL, FREQUENCY, 0)
+		self.pi.hardware_PWM(GREEN_LED_CHANNEL, GREEN_LED_FREQUENCY, 0)
 		self.pi.write(RED_LED_CHANNEL, 0)
 		self.pi.write(GREEN_LED_CHANNEL, 0)
 
 	def cleanUp(self):
 		self.turnOffRgbLed()
+		self.updateMessageIndicator(0)
 		self.pi.stop()
 
 

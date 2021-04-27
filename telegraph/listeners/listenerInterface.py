@@ -27,6 +27,9 @@ class ListenerInterface:
 	def sendSuccess(self):
 		pass
 
+	def playTone(self, duration):
+		pass
+
 	def updateMessageIndicator(self, messages):
 		pass
 
