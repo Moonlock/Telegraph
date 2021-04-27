@@ -1,11 +1,16 @@
 from time import time, sleep
 import os
-import pygame
 import signal
+
+import numpy
+import pygame
 
 from telegraph.common.commonFunctions import debug
 from telegraph.listeners.listenerInterface import ListenerInterface
 
+
+FREQUENCY = 800
+SAMPLE_RATE = 44100
 
 USEC_PER_SECOND = 1000000
 
@@ -72,6 +77,14 @@ class KeyboardListener(ListenerInterface):
 
 	def sendSuccess(self):
 		print("Message sent")
+
+	def playTone(self, duration):
+		samples = numpy.arange(SAMPLE_RATE * duration)
+		buffer = numpy.sin(2*numpy.pi * samples * FREQUENCY / SAMPLE_RATE).astype(numpy.float32)
+		sound = pygame.mixer.Sound(buffer)
+		sound.play()
+
+		pygame.time.delay(int(duration * 1000))
 
 	def updateMessageIndicator(self, messages):
 		print("Messages: " + str(messages) + ".")
