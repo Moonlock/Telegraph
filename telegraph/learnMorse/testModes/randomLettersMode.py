@@ -1,33 +1,32 @@
-from subprocess import Popen
+from threading import Timer
 from time import sleep
 import random
 import signal
 import sys
 
-from telegraph.common.constants import SOUND_FILES_PATH
 from telegraph.common.symbols import Symbol
 from telegraph.learnMorse.alphabet import morse
-from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface, \
-		DIT_FILE, DAH_FILE, SYMBOL_SPACE_FILE, CHAR_SPACE_FILE, WORD_SPACE_FILE, TEST_FILE
-import telegraph.common.commonFunctions as common
+from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface
 
 
 class RandomLettersMode(TestModeInterface):
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
-		signal.signal(signal.SIGINT, self.handleSigIntNoTimer)
+		signal.signal(signal.SIGINT, self.handleSigInt)
 
 		self.masterList = []
 		self.user = user
-		self.createSymbolFiles(charWpm, overallWpm)
+		self.initializeTiming(charWpm, overallWpm)
 
 		self.chars = []
 		for _ in range(numChars):
 			self.chars.append(morse.popitem(False))
 
-		self.testTime = testTime
+		self.timer = Timer(testTime, self.stopTest)
 
 		sleep(2)
+		self.running = True
+		self.timer.start()
 		self.startTest()
 
 	def startTest(self):
@@ -36,35 +35,26 @@ class RandomLettersMode(TestModeInterface):
 		print(" > ", end="")
 		sys.stdout.flush()
 
-		timeSpent = 0
-		fileList = []
+		while self.running:
 
-		while timeSpent < self.testTime:
-
-			wordLength = random.choice(range(8)) + 1
-			for _ in range(wordLength):
+			wordLength = random.choice(range(10)) + 1
+			for i in range(wordLength):
 				char = random.choice(self.chars)
 				self.masterList.append(char[0])
 
 				for symbol in char[1]:
 					if symbol == Symbol.DIT:
-						fileList.append(DIT_FILE)
-						timeSpent += self.ditLength
+						self.playDit()
 					else:
-						fileList.append(DAH_FILE)
-						timeSpent += self.dahLength
-					fileList.append(SYMBOL_SPACE_FILE)
-					timeSpent += self.symbolSpace
+						self.playDah()
+					self.playSymbolSpace()
 
-				fileList.append(CHAR_SPACE_FILE)
-				timeSpent += self.charSpace
+				if i == wordLength-1:
+					self.playWordSpace()
+				else:
+					self.playCharSpace()
 
-			fileList.append(WORD_SPACE_FILE)
-			timeSpent += self.wordSpace
 			self.masterList.append(' ')
-
-		common.concatAudioFiles(fileList, TEST_FILE)
-		proc = Popen(['play', '-q', TEST_FILE])
 
 		#Remove final word space
 		self.masterList.pop()
@@ -73,7 +63,4 @@ class RandomLettersMode(TestModeInterface):
 		master = "".join(self.masterList)
 		print("   " + master)
 		self.checkAnswer(response.upper(), master)
-
-		proc.kill()
-		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
 

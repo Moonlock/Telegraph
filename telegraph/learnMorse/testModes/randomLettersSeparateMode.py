@@ -1,4 +1,3 @@
-from subprocess import Popen
 from threading import Timer
 from time import sleep
 import random
@@ -8,17 +7,16 @@ import tty
 
 from telegraph.common.symbols import Symbol
 from telegraph.learnMorse.alphabet import morse
-from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface, \
-		DIT_FILE, DAH_FILE
+from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface
 import termios
 
 
 class RandomLettersSeparateMode(TestModeInterface):
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
-		signal.signal(signal.SIGINT, self.handleSigIntWithTimer)
+		signal.signal(signal.SIGINT, self.handleSigInt)
 
-		self.createSymbolFiles(charWpm, overallWpm)
+		self.initializeTiming(charWpm, overallWpm)
 
 		self.chars = []
 		for _ in range(numChars):
@@ -30,17 +28,6 @@ class RandomLettersSeparateMode(TestModeInterface):
 		self.running = True
 		self.timer.start()
 		self.startTest()
-
-	def stopTest(self):
-		self.running = False
-
-	def playDit(self):
-		Popen(['play', '-q', DIT_FILE])
-		sleep(self.ditLength + self.symbolSpace)
-
-	def playDah(self):
-		Popen(['play', '-q', DAH_FILE])
-		sleep(self.dahLength + self.symbolSpace)
 
 	def getChar(self):
 		fd = sys.stdin.fileno()
@@ -69,6 +56,7 @@ class RandomLettersSeparateMode(TestModeInterface):
 			char = random.choice(self.chars)
 			for symbol in char[1]:
 				play[symbol]()
+				self.playSymbolSpace()
 
 			response = self.getChar()
 

@@ -21,7 +21,7 @@ INIT_MESSAGE_TIME_UNITS = 15
 class SendMode(TestModeInterface):
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
-		signal.signal(signal.SIGINT, self.handleSigIntWithTimer)
+		signal.signal(signal.SIGINT, self.handleSigInt)
 
 		self.user = user
 
