@@ -1,16 +1,13 @@
-from subprocess import Popen
+from threading import Timer
 from time import sleep
 import os
 import random
 import signal
 import sys
 
-from telegraph.common.constants import SOUND_FILES_PATH
 from telegraph.common.symbols import Symbol
 from telegraph.learnMorse.alphabet import letters
-from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface, \
-		DIT_FILE, DAH_FILE, SYMBOL_SPACE_FILE, CHAR_SPACE_FILE, WORD_SPACE_FILE, TEST_FILE, SECONDS_PER_MINUTE
-import telegraph.common.commonFunctions as common
+from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface, SECONDS_PER_MINUTE
 
 
 APPROX_CHARS_PER_WORD = 5
@@ -25,15 +22,19 @@ END_COPYRIGHT_LENGTH = 400
 class TextMode(TestModeInterface):
 
 	def __init__(self, charWpm, overallWpm, numChars, testTime, user):
-		signal.signal(signal.SIGINT, self.handleSigIntNoTimer)
+		signal.signal(signal.SIGINT, self.handleSigInt)
 
 		self.masterList = []
-		self.createSymbolFiles(charWpm, overallWpm)
+		self.initializeTiming(charWpm, overallWpm)
 
 		self.testTime = testTime
 		self.wpm = overallWpm
 
+		self.timer = Timer(testTime, self.stopTest)
+
 		sleep(2)
+		self.running = True
+		self.timer.start()
 		self.startTest()
 
 	def getText(self):
@@ -50,9 +51,6 @@ class TextMode(TestModeInterface):
 		print(" > ", end="")
 		sys.stdout.flush()
 
-		timeSpent = 0
-		fileList = []
-
 		lines = self.getText().split('\n')
 		text = '\n'.join(lines[TEXT_START_OFFSET : -END_COPYRIGHT_LENGTH])
 
@@ -60,37 +58,33 @@ class TextMode(TestModeInterface):
 		maxStartingPos = int(len(text) - approxCharsInTest*2)
 		pos = random.choice(range(maxStartingPos))
 
-		while timeSpent < self.testTime:
+		prevIsChar = False
+
+		while self.running:
 
 			char = text[pos]
 
-			if (char == ' ' or char == '\n' or char == '-') and self.masterList and self.masterList[-1] != ' ':
-				fileList.append(WORD_SPACE_FILE)
-				timeSpent += self.wordSpace
-				self.masterList.append(' ')
+			if (char == ' ' or char == '\n' or char == '-') and self.masterList:
+				if prevIsChar:
+					self.playWordSpace()
+					self.masterList.append(' ')
+					prevIsChar = False
 
 			elif char.upper() in letters:
+				if prevIsChar:
+					self.playCharSpace()
+				prevIsChar = True
+
 				self.masterList.append(char)
 
 				for symbol in letters[char.upper()]:
 					if symbol == Symbol.DIT:
-						fileList.append(DIT_FILE)
-						timeSpent += self.ditLength
+						self.playDit()
 					else:
-						fileList.append(DAH_FILE)
-						timeSpent += self.dahLength
-					fileList.append(SYMBOL_SPACE_FILE)
-					timeSpent += self.symbolSpace
-
-				fileList.append(CHAR_SPACE_FILE)
-				timeSpent += self.charSpace
+						self.playDah()
+					self.playSymbolSpace()
 
 			pos += 1
-			if pos == len(text):
-				pos = 0
-
-		common.concatAudioFiles(fileList, TEST_FILE)
-		proc = Popen(['play', '-q', TEST_FILE])
 
 		#Remove trailing whitespace
 		if self.masterList[-1] == ' ':
@@ -101,7 +95,4 @@ class TextMode(TestModeInterface):
 		print("   " + master)
 		print(self.chosenFile)
 		self.checkAnswer(response.lower(), master.lower())
-
-		proc.kill()
-		common.deleteFiles(SOUND_FILES_PATH, "learnMorse-", ".sox")
 

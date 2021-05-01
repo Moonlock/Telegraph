@@ -13,11 +13,9 @@ from telegraph.server import server
 
 try:
 	from telegraph.listeners.gpioListener import GpioListener
-#	from telegraph.server.piServer import PiServer
 	usingGpio = True
 except ImportError:
 	from telegraph.listeners.keyboardListener import KeyboardListener
-#	from telegraph.server.keyboardServer import KeyboardServer
 	usingGpio = False
 
 
@@ -49,7 +47,6 @@ else:
 	serverPort = clientConfig['Port']
 
 listener = GpioListener() if usingGpio else KeyboardListener(handleSigInt)
-#server = PiServer if usingGpio else KeyboardServer
 
 clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, killed, sendInProgress))
 clientThread.start()
