@@ -54,8 +54,9 @@ clientThread.start()
 serverConfig = config['Server']
 listenPort = serverConfig['Port']
 wpm = int(serverConfig['WPM'])
+printMessages = serverConfig.getboolean('Print')
 
-serverThread = Thread(target=server.Server, args=(listenPort, wpm, listener, killed, sendInProgress))
+serverThread = Thread(target=server.Server, args=(listenPort, wpm, printMessages, listener, killed, sendInProgress))
 serverThread.start()
 
 while not listener.isReady():
