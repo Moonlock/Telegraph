@@ -20,6 +20,8 @@ def main():
 		commonConfig = {}
 		serverConfig['WPM'] = input('WPM playback speed [20]: ') or 20
 		serverConfig['Port'] = input('Local port [8000]: ') or 8000
+		printMessages = input('Print received messages [y/N]:' or 'n')
+		serverConfig['Print'] = printMessages == 'y'
 
 		print()
 		print("    S: Single contact")

@@ -1,3 +1,4 @@
+from subprocess import Popen, PIPE
 from threading import Lock, Thread
 from time import sleep
 import socket
@@ -12,7 +13,7 @@ SECONDS_PER_MINUTE = 60
 
 class Server:
 
-	def __init__(self, port, wpm, listener, killed, sendInProgress):
+	def __init__(self, port, wpm, printMessages, listener, killed, sendInProgress):
 		self.timeUnitSec = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
 
 		self.messages = []
@@ -30,6 +31,7 @@ class Server:
 
 		self.killed = killed
 		self.port = port
+		self.printMessages = printMessages
 
 		self.start()
 
@@ -71,6 +73,9 @@ class Server:
 			self.unplayedMessages.append(parsedMsg)
 		elif not self.playMessage(message=parsedMsg):
 			self.unplayedMessages.append(parsedMsg)
+
+		if self.printMessages:
+			self.printMessage(parsedMsg)
 
 	def playMessage(self, channel=None, level=None, tick=None, message=None):
 
@@ -136,6 +141,13 @@ class Server:
 
 	def playWordSpace(self):
 		sleep(self.timeUnitSec*7)
+
+	def printMessage(self, message):
+		msgString = ""
+		for symbol in message:
+			msgString += symbol.toString()
+		p = Popen(['lp', '-'], stdin=PIPE)
+		p.communicate(msgString.encode('utf-8'))
 
 	def deleteMessage(self, channel=None, level=None, tick=None):
 		if self.messages:
