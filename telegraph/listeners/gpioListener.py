@@ -1,7 +1,6 @@
 from threading import Timer
 from time import sleep
 
-from telegraph.common.commonFunctions import debug
 from telegraph.listeners.listenerInterface import ListenerInterface
 import pigpio
 
@@ -40,7 +39,7 @@ class GpioListener(ListenerInterface):
 			elapsedTime += TICK_ROLLOVER
 
 		event = "Release" if level == 0 else "Press"
-		debug("{}: {}".format(event, int(elapsedTime/USEC_PER_MSEC)))
+		self.debug("{}: {}".format(event, int(elapsedTime/USEC_PER_MSEC)))
 
 		self.lastTick = tick
 		self.callbacks[self.mode](level == 0, elapsedTime)
@@ -80,13 +79,16 @@ class GpioListener(ListenerInterface):
 		else:
 			self.pi.write(MESSAGE_LED_CHANNEL, 0)
 
+	def logMessage(self, message):
+		print(message)
+
 	def startMessage(self):
 		self.turnOffRgbLed()
 		self.pi.write(RED_LED_CHANNEL, 1)
 		self.pi.hardware_PWM(GREEN_LED_CHANNEL, GREEN_LED_FREQUENCY, GREEN_LED_DUTY_CYCLE)
 
 	def error(self, message):
-		debug(message)
+		self.notice(message)
 		self.turnOffRgbLed()
 		self.pi.write(RED_LED_CHANNEL, 1)
 		Timer(2, self.turnOffRgbLed).start()

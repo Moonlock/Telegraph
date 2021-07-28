@@ -3,7 +3,7 @@ from threading import Lock, Thread
 from time import sleep
 import socket
 
-from telegraph.common.commonFunctions import debug, fatal
+from telegraph.common.debuggable import Debuggable
 from telegraph.common.symbols import Symbol
 
 
@@ -11,9 +11,11 @@ COUNTS_PER_WORD = 50
 SECONDS_PER_MINUTE = 60
 
 
-class Server:
+class Server(Debuggable):
 
 	def __init__(self, port, wpm, printMessages, listener, destConfig, killed, sendInProgress):
+		Debuggable.__init__(self, listener.logMessage)
+
 		self.timeUnitSec = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
 
 		self.messages = []
@@ -44,7 +46,7 @@ class Server:
 			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.sock.bind(('', int(self.port)))
 		except socket.error as e:
-			fatal("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
+			self.fatal("Failed to create socket.  {}: {}".format(e.errno, e.strerror))
 
 		self.sock.listen(10)
 
@@ -54,7 +56,7 @@ class Server:
 				conn, addr = self.sock.accept()
 				data = conn.recv(1024)
 				conn.close()
-				debug("Received message from {}.".format(self.destConfig.lookupAddress(addr[0])))
+				self.notice("Received message from {}.".format(self.destConfig.lookupAddress(addr[0])))
 				self.handleMessage(data)
 			except socket.timeout:
 				continue
@@ -71,7 +73,7 @@ class Server:
 		self.listener.updateMessageIndicator(len(self.messages))
 
 		if self.sendInProgress.isSet():
-			debug("Send in progress, delaying message.")
+			self.debug("Send in progress, delaying message.")
 			self.unplayedMessages.append(parsedMsg)
 		elif not self.playMessage(message=parsedMsg):
 			self.unplayedMessages.append(parsedMsg)
@@ -96,12 +98,12 @@ class Server:
 
 		if message is None:
 			if not self.messages:
-				debug("No message to play.")
+				self.debug("No message to play.")
 				return False
 			message = self.messages[0]
 
 		if not self.messagePlayLock.acquire(False):
-			debug("Already playing a message.")
+			self.debug("Already playing a message.")
 			return False
 
 		playThread = Thread(target=innerPlayMessage, args=([message]))
@@ -155,5 +157,5 @@ class Server:
 		if self.messages:
 			self.messages.pop(0)
 			self.listener.updateMessageIndicator(len(self.messages))
-		debug("Delete message; {} remaining.".format(len(self.messages)))
+		self.notice("Delete message; {} remaining.".format(len(self.messages)))
 

@@ -1,16 +1,18 @@
 from telegraph.common.clientMode import ClientMode
-from telegraph.common.commonFunctions import fatal
+from telegraph.common.debuggable import Debuggable
 
-class ListenerInterface:
+class ListenerInterface(Debuggable):
 
 	def __init__(self):
+		Debuggable.__init__(self, self.logMessage)
+
 		self.clientConfigured = False
 		self.serverConfigured = False
 		self.server = None
 
 		self.mode = ClientMode.INIT
-		self.callbacks = {ClientMode.INIT: lambda: fatal("Callback not defined."),
-						ClientMode.MAIN: lambda: fatal("Callback not defined.")}
+		self.callbacks = {ClientMode.INIT: lambda: self.fatal("Callback not defined."),
+						ClientMode.MAIN: lambda: self.fatal("Callback not defined.")}
 
 	def setMode(self, mode):
 		self.mode = mode
@@ -31,6 +33,9 @@ class ListenerInterface:
 		pass
 
 	def updateMessageIndicator(self, messages):
+		pass
+
+	def logMessage(self, message):
 		pass
 
 	def setClientCallback(self, initCallback, mainCallback):
