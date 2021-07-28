@@ -1,7 +1,6 @@
 from math import ceil
 import socket
 
-from telegraph.client.destinationConfig import DestinationConfig
 from telegraph.common.clientMode import ClientMode
 from telegraph.common.commonFunctions import debug
 from telegraph.common.symbols import Symbol
@@ -14,7 +13,7 @@ END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
 class Client:
 
-	def __init__(self, multiDest, serv, servPort, listener, killed, sendInProgress, isTest=False):
+	def __init__(self, multiDest, serv, servPort, listener, destConfig, killed, sendInProgress, isTest=False):
 		self.multiDest = multiDest
 		self.waitingForDest = multiDest
 		if multiDest:
@@ -27,7 +26,7 @@ class Client:
 		self.timeUnitUsec = 0
 		self.pressed = False
 
-		self.destConfig = DestinationConfig(self.callSignError)
+		self.destConfig = destConfig
 
 		self.listener = listener
 		self.listener.setClientCallback(self.initKeyEvent, self.mainKeyEvent)
@@ -101,7 +100,7 @@ class Client:
 
 		if len(destBounds) != 2:
 			self.callSignError("Error parsing call sign")
-			return
+			return None
 
 		start = destBounds[0] + 1
 		end = destBounds[1]
@@ -109,7 +108,8 @@ class Client:
 
 		dest = self.destConfig.createDestination(sign)
 		if dest is None:
-			return []
+			self.callSignError("Call sign not found")
+			return None
 
 		debug("Sending to " + dest.toString() + ".")
 

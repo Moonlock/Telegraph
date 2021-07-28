@@ -3,9 +3,9 @@ from unittest import mock
 import unittest
 
 from telegraph.client.client import Client
-from telegraph.client.destinationConfig import DestinationConfig
 from telegraph.common.clientMode import ClientMode
 from telegraph.common.symbols import Symbol as s
+from telegraph.destinations.destinationConfig import DestinationConfig
 
 
 DIT = 60000
@@ -23,7 +23,8 @@ class TestSingleDestination(unittest.TestCase):
 	@mock.patch('telegraph.listeners.listenerInterface.ListenerInterface')
 	def setUp(self, mock_listener):
 		self.mock_listener_instance = mock_listener.instance
-		self.client = Client(False, '1.1.1.1', '8000', self.mock_listener_instance, None, Event(), True)
+		destConfig = DestinationConfig()
+		self.client = Client(False, '1.1.1.1', '8000', self.mock_listener_instance, destConfig, None, Event(), True)
 
 
 	def testInitSequence(self):
@@ -56,9 +57,9 @@ class TestMultipleDestinations(unittest.TestCase):
 
 	@mock.patch('telegraph.listeners.listenerInterface.ListenerInterface')
 	def setUp(self, mock_listener):
-		self.client = Client(True, None, None, mock_listener, None, Event(), True)
-		self.client.destConfig = DestinationConfig(self.client.callSignError,
+		destConfig = DestinationConfig(
 				"test/telegraph/testContacts.ini", "test/telegraph/testGroups.ini")
+		self.client = Client(True, None, None, mock_listener, destConfig, None, Event(), True)
 
 		self.moonlockEndpoint = ('1.1.1.1', '8000')
 		self.muskratEndpoint = ('2.2.2.2', '8001')
@@ -85,7 +86,7 @@ class TestMultipleDestinations(unittest.TestCase):
 		callsign = [WORD_SPACE, DAH, SYM_SPACE, DAH, WORD_SPACE]
 
 		inputSequence(callsign, self.client.mainKeyEvent)
-		self.assertEqual([], self.client.dests)
+		self.assertIsNone(self.client.dests)
 		self.assertEqual([], self.client.message)
 
 	@mock.patch('telegraph.client.client.socket')

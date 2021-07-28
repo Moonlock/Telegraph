@@ -13,13 +13,15 @@ SECONDS_PER_MINUTE = 60
 
 class Server:
 
-	def __init__(self, port, wpm, printMessages, listener, killed, sendInProgress):
+	def __init__(self, port, wpm, printMessages, listener, destConfig, killed, sendInProgress):
 		self.timeUnitSec = SECONDS_PER_MINUTE / (COUNTS_PER_WORD * wpm)
 
 		self.messages = []
 		self.messagePlayLock = Lock()
 		self.unplayedMessages = []
 		self.sendInProgress = sendInProgress
+
+		self.destConfig = destConfig
 
 		self.play = {Symbol.DIT: self.playDit,
 					Symbol.DAH: self.playDah,
@@ -52,7 +54,7 @@ class Server:
 				conn, addr = self.sock.accept()
 				data = conn.recv(1024)
 				conn.close()
-				debug("Received message from " + str(addr))
+				debug("Received message from {}.".format(self.destConfig.lookupAddress(addr[0])))
 				self.handleMessage(data)
 			except socket.timeout:
 				continue

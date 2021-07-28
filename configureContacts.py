@@ -3,16 +3,16 @@
 import configparser
 import sys
 
-from telegraph.client.destination import Group
-from telegraph.client.destinationConfig import DestinationConfig
 from telegraph.common import constants
 from telegraph.common.commonFunctions import toMorse, fatal
+from telegraph.destinations.destination import Group
+from telegraph.destinations.destinationConfig import DestinationConfig
 
 
 # TODO: Removing a contact or changing their call sign will cause an error
 #	if they're in a group.
 # TODO: Check for duplicate call signs when creating/updating.
-destConfig = DestinationConfig(fatal)
+destConfig = DestinationConfig()
 
 def main():
 	config = configparser.ConfigParser()
