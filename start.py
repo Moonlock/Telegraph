@@ -8,6 +8,7 @@ import signal
 from telegraph.client import client
 from telegraph.common import constants
 from telegraph.common.commonFunctions import fatal
+from telegraph.destinations.destinationConfig import DestinationConfig
 from telegraph.server import server
 
 
@@ -47,8 +48,9 @@ else:
 	serverPort = clientConfig['Port']
 
 listener = GpioListener() if usingGpio else KeyboardListener(handleSigInt)
+destConfig = DestinationConfig()
 
-clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, killed, sendInProgress))
+clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, destConfig, killed, sendInProgress))
 clientThread.start()
 
 serverConfig = config['Server']
@@ -56,7 +58,7 @@ listenPort = serverConfig['Port']
 wpm = int(serverConfig['WPM'])
 printMessages = serverConfig.getboolean('Print')
 
-serverThread = Thread(target=server.Server, args=(listenPort, wpm, printMessages, listener, killed, sendInProgress))
+serverThread = Thread(target=server.Server, args=(listenPort, wpm, printMessages, listener, destConfig, killed, sendInProgress))
 serverThread.start()
 
 while not listener.isReady():

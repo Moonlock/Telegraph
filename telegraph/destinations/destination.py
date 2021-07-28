@@ -1,15 +1,13 @@
-from telegraph.common import constants
-from telegraph.common.commonFunctions import toMorse
+from telegraph.common.commonFunctions import fatal
 
 
 class Destination:
 
-	def __init__(self, callsign, errorCallback, contactsConfig, updater):
+	def __init__(self, callsign, contactsConfig, updater):
 		self.updater = updater
 		self.contactsConfig = contactsConfig
 
 		self.callsign = callsign
-		self.errorCallback = errorCallback
 
 		self.config = None
 		self.members = []
@@ -27,8 +25,8 @@ class Destination:
 
 class Contact(Destination):
 
-	def __init__(self, callsign, errorCallback, contactsConfig, updater):
-		Destination.__init__(self, callsign, errorCallback, contactsConfig, updater)
+	def __init__(self, callsign, contactsConfig, updater):
+		Destination.__init__(self, callsign, contactsConfig, updater)
 		self._parseConfig()
 
 	def getAddress(self):
@@ -38,13 +36,13 @@ class Contact(Destination):
 		return self.config["Port"]
 
 	def getMemberCallsigns(self):
-		self.errorCallback(self.getName() + " is not a group.")
+		fatal(self.getName() + " is not a group.")
 
 	def toString(self):
 		return self.getName()
 
 	def update(self, newConfig):
-		self.updater.updateConfig(self.callsign, newConfig)
+		self.updater.updateContact(self.callsign, newConfig)
 
 	def _parseConfig(self):
 		signString = "".join([str(int(symbol)) for symbol in self.callsign])
@@ -55,8 +53,8 @@ class Contact(Destination):
 
 class Group(Destination):
 
-	def __init__(self, callsign, errorCallback, contactsConfig, groupsConfig, updater):
-		Destination.__init__(self, callsign, errorCallback, contactsConfig, updater)
+	def __init__(self, callsign, contactsConfig, groupsConfig, updater):
+		Destination.__init__(self, callsign, contactsConfig, updater)
 
 		self.groupsConfig = groupsConfig
 		self._parseConfig()
@@ -80,5 +78,5 @@ class Group(Destination):
 				print("Group member not found; continuing.")
 				continue
 			memberConfig = self.contactsConfig[member]
-			self.members.append(Contact(member, self.errorCallback, self.contactsConfig, self.updater))
+			self.members.append(Contact(member, self.contactsConfig, self.updater))
 			self.endpoints.append((memberConfig["Address"], memberConfig["Port"]))

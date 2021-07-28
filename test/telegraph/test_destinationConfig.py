@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from telegraph.client.destinationConfig import DestinationConfig
+from telegraph.destinations.destinationConfig import DestinationConfig
 import telegraph.common.commonFunctions as common
 
 
@@ -26,7 +26,7 @@ class TestNormalOperation(unittest.TestCase):
 				"Members": str(common.toMorse(self.moonlock["Sign"])) + " " +
 						str(common.toMorse(self.muskrat["Sign"]))}
 
-		self.destinationConfig = DestinationConfig(self.error, TEST_CONTACTS_FILE, TEST_GROUPS_FILE)
+		self.destinationConfig = DestinationConfig(TEST_CONTACTS_FILE, TEST_GROUPS_FILE)
 
 	def tearDown(self):
 		if os.path.exists(TEST_CONTACTS_FILE):
@@ -73,23 +73,9 @@ class TestNormalOperation(unittest.TestCase):
 		self.assertIn(self.muskrat['Name'], [contact.getName() for contact in contacts])
 		self.assertIn(self.group["Name"], groups[0].getName())
 
-	def error(self, message):
-		self.assertTrue(False)
-
-
-class TestError(unittest.TestCase):
-
-	class ExpectedError(Exception):
-		pass
-
 	def testCallsignDoesNotExist(self):
-		destinationConfig = DestinationConfig(self.error, TEST_CONTACTS_FILE, TEST_GROUPS_FILE)
-
-		with self.assertRaises(self.ExpectedError):
-			destinationConfig.createDestination(common.toMorse("TEST"))
-
-	def error(self, message):
-		raise self.ExpectedError
+		destinationConfig = DestinationConfig(TEST_CONTACTS_FILE, TEST_GROUPS_FILE)
+		self.assertIsNone(destinationConfig.createDestination(common.toMorse("TEST")))
 
 
 if __name__ == "__main__":
