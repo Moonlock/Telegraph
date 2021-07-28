@@ -4,10 +4,12 @@ import signal
 
 import numpy
 import pygame
+import pygame.freetype
 
-from telegraph.common.commonFunctions import debug
 from telegraph.listeners.listenerInterface import ListenerInterface
 
+
+NUM_LOG_MESSAGES = 24
 
 FREQUENCY = 800
 SAMPLE_RATE = 44100
@@ -18,7 +20,7 @@ USEC_PER_SECOND = 1000000
 class KeyboardListener(ListenerInterface):
 
 	def __init__(self, handleSigInt):
-		super().__init__()
+		ListenerInterface.__init__(self)
 
 		self.lastPress = 0
 		self.lastRelease = 0
@@ -27,7 +29,12 @@ class KeyboardListener(ListenerInterface):
 
 	def start(self):
 		pygame.init()
-		pygame.display.set_mode((800, 600))
+
+		self.screen = pygame.display.set_mode((800, 600))
+		self.font = pygame.freetype.SysFont("Monospace", 20)
+		self.fontColour = (255, 255, 255)
+		self.logPos = [(0, 25*i) for i in range(NUM_LOG_MESSAGES)]
+		self.logMessages = []
 
 		running = True
 		while running:
@@ -60,23 +67,28 @@ class KeyboardListener(ListenerInterface):
 	def timePress(self):
 		self.lastRelease = time()
 		pressTimeUsec = (self.lastRelease - self.lastPress) * USEC_PER_SECOND
-		debug("Press: " + str(int(pressTimeUsec/1000)))
+		self.debug("Press: " + str(int(pressTimeUsec/1000)))
 		return pressTimeUsec
 
 	def timeRelease(self):
 		self.lastPress = time()
 		releaseTimeUsec = (self.lastPress - self.lastRelease) * USEC_PER_SECOND
-		debug("Release: " + str(int(releaseTimeUsec/1000)))
+		self.debug("Release: " + str(int(releaseTimeUsec/1000)))
 		return releaseTimeUsec
 
 	def startMessage(self):
-		print("Start message")
+		self.notice("Start message")
 
 	def error(self, message):
-		print(message)
+		self.notice(message)
+
+	def fatal(self, message):
+		pygame.quit()
+		os.kill(os.getpid(), signal.SIGINT)
+		super().fatal(message)
 
 	def sendSuccess(self):
-		print("Message sent")
+		self.notice("Message sent")
 
 	def playTone(self, duration):
 		samples = numpy.arange(SAMPLE_RATE * duration)
@@ -87,5 +99,16 @@ class KeyboardListener(ListenerInterface):
 		pygame.time.delay(int(duration * 1000))
 
 	def updateMessageIndicator(self, messages):
-		print("Messages: " + str(messages) + ".")
+		self.notice("Messages: " + str(messages) + ".")
+
+	def logMessage(self, message):
+		self.logMessages.append(message)
+		if len(self.logMessages) > NUM_LOG_MESSAGES:
+			self.logMessages.pop(0)
+
+		self.screen.fill((0,0,0))
+		for i, msg in enumerate(self.logMessages):
+			self.font.render_to(self.screen, self.logPos[i], msg, self.fontColour)
+
+		pygame.display.flip()
 

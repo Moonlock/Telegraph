@@ -2,7 +2,7 @@ from math import ceil
 import socket
 
 from telegraph.common.clientMode import ClientMode
-from telegraph.common.commonFunctions import debug
+from telegraph.common.debuggable import Debuggable
 from telegraph.common.symbols import Symbol
 import termios
 
@@ -11,9 +11,11 @@ INIT_MESSAGE_TIME_UNITS = 15
 INIT_MESSAGE_SYMBOL_LENGTH = 6	# Includes word space following init message
 END_MESSAGE = [Symbol.DIT, Symbol.DAH, Symbol.DIT, Symbol.DAH, Symbol.DIT]
 
-class Client:
+class Client(Debuggable):
 
 	def __init__(self, multiDest, serv, servPort, listener, destConfig, killed, sendInProgress, isTest=False):
+		Debuggable.__init__(self, listener.logMessage)
+
 		self.multiDest = multiDest
 		self.waitingForDest = multiDest
 		if multiDest:
@@ -59,7 +61,7 @@ class Client:
 
 		self.timeUnitUsec = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
 		self.initTimings.clear()
-		debug("Starting with timeunit " + str(int(self.timeUnitUsec/1000)) + "ms")
+		self.debug("Starting with timeunit " + str(int(self.timeUnitUsec/1000)) + "ms")
 		self.startMessage()
 
 
@@ -111,7 +113,7 @@ class Client:
 			self.callSignError("Call sign not found")
 			return None
 
-		debug("Sending to " + dest.toString() + ".")
+		self.debug("Sending to " + dest.toString() + ".")
 
 		self.waitingForDest = False
 		return dest.getEndpoints()

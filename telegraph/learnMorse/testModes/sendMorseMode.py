@@ -3,7 +3,6 @@ import random
 import signal
 
 from telegraph.common.clientMode import ClientMode
-from telegraph.common.commonFunctions import debug
 from telegraph.common.symbols import Symbol
 from telegraph.learnMorse.alphabet import morse
 from telegraph.learnMorse.testModes.testModeInterface import TestModeInterface
@@ -51,7 +50,7 @@ class SendMode(TestModeInterface):
 			elapsedTime += TICK_ROLLOVER
 
 		event = "Release" if level == 0 else "Press"
-		debug("{}: {}".format(event, int(elapsedTime/USEC_PER_MSEC)))
+		print("{}: {}".format(event, int(elapsedTime/USEC_PER_MSEC)))
 
 		self.lastTick = tick
 		self.callbacks[self.mode](level, elapsedTime)

@@ -6,22 +6,21 @@ from telegraph.common.symbols import Symbol
 from telegraph.learnMorse.alphabet import morse
 
 
+def fatal(message):
+	print("Error: " + message)
+	sys.exit()
+
+
 try:
 	config = configparser.ConfigParser()
 	config.read(constants.CONFIG_FILE)
 	dbgEnabled = config['Common'].getboolean('Debug')
 except KeyError:
-	print("Error reading config file.")
-	sys.exit()
+	fatal("Error reading config file.")
 
 
-def debug(message):
-	if dbgEnabled:
-		print(message)
-
-def fatal(message=""):
-	print("Error: " + message)
-	sys.exit()
+def isDebugEnabled():
+	return dbgEnabled
 
 def toMorse(sign):
 	signMorse = []
