@@ -19,11 +19,12 @@ USEC_PER_SECOND = 1000000
 
 class KeyboardListener(ListenerInterface):
 
-	def __init__(self, handleSigInt):
+	def __init__(self, buzzOnSend, handleSigInt):
 		ListenerInterface.__init__(self)
 
 		self.lastPress = 0
 		self.lastRelease = 0
+		self.buzzOnSend = buzzOnSend
 
 		signal.signal(signal.SIGINT, handleSigInt)
 
@@ -35,6 +36,10 @@ class KeyboardListener(ListenerInterface):
 		self.fontColour = (255, 255, 255)
 		self.logPos = [(0, 25*i) for i in range(NUM_LOG_MESSAGES)]
 		self.logMessages = []
+
+		samples = numpy.arange(SAMPLE_RATE)
+		buffer = numpy.sin(2*numpy.pi * samples * FREQUENCY / SAMPLE_RATE).astype(numpy.float32)
+		self.buzzer = pygame.mixer.Sound(buffer)
 
 		running = True
 		while running:
@@ -65,15 +70,23 @@ class KeyboardListener(ListenerInterface):
 			sleep(0.010)
 
 	def timePress(self):
+		if(self.buzzOnSend):
+			self.buzzer.stop()
+
 		self.lastRelease = time()
 		pressTimeUsec = (self.lastRelease - self.lastPress) * USEC_PER_SECOND
 		self.debug("Press: " + str(int(pressTimeUsec/1000)))
+
 		return pressTimeUsec
 
 	def timeRelease(self):
+		if(self.buzzOnSend):
+			self.buzzer.play(-1)
+
 		self.lastPress = time()
 		releaseTimeUsec = (self.lastPress - self.lastRelease) * USEC_PER_SECOND
 		self.debug("Release: " + str(int(releaseTimeUsec/1000)))
+
 		return releaseTimeUsec
 
 	def startMessage(self):

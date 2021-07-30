@@ -26,14 +26,17 @@ TICK_ROLLOVER = 4294967296
 
 class GpioListener(ListenerInterface):
 
-	def __init__(self):
+	def __init__(self, buzzOnSend):
 		super().__init__()
 
 		self.pi = pigpio.pi()
+		self.buzzOnSend = buzzOnSend
 
 		self.lastTick = 0
 
 	def keyCallback(self, channel, level, tick):
+		self.checkBuzzOnSend(level)
+
 		elapsedTime = tick - self.lastTick
 		if elapsedTime < 0:
 			elapsedTime += TICK_ROLLOVER
@@ -72,6 +75,13 @@ class GpioListener(ListenerInterface):
 		self.pi.hardware_PWM(BUZZER_CHANNEL, BUZZER_FREQUENCY, BUZZER_DUTY_CYCLE)
 		sleep(duration)
 		self.pi.hardware_PWM(BUZZER_CHANNEL, BUZZER_FREQUENCY, 0)
+
+	def checkBuzzOnSend(self, level):
+		if self.buzzOnSend:
+			if level == 0:
+				self.pi.hardware_PWM(BUZZER_CHANNEL, BUZZER_FREQUENCY, BUZZER_DUTY_CYCLE)
+			else:
+				self.pi.hardware_PWM(BUZZER_CHANNEL, BUZZER_FREQUENCY, 0)
 
 	def updateMessageIndicator(self, messages):
 		if messages:
