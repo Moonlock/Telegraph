@@ -47,7 +47,9 @@ else:
 	serverAddress = clientConfig['Address']
 	serverPort = clientConfig['Port']
 
-listener = GpioListener() if usingGpio else KeyboardListener(handleSigInt)
+buzzOnSend = clientConfig.getboolean('Buzz on Send')
+
+listener = GpioListener(buzzOnSend) if usingGpio else KeyboardListener(buzzOnSend, handleSigInt)
 destConfig = DestinationConfig()
 
 clientThread = Thread(target=client.Client, args=(multiDest, serverAddress, serverPort, listener, destConfig, killed, sendInProgress))

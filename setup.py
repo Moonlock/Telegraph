@@ -41,6 +41,8 @@ def main():
 		if not multiDest:
 			clientConfig['Address'] = input('Remote IP address/hostname [localhost]: ') or 'localhost'
 			clientConfig['Port'] = input('Remote port [8000]: ') or 8000
+		buzzOnSend = input('Play tone when sending [y/N]:' or 'n')
+		clientConfig['Buzz on Send'] = buzzOnSend == 'y'
 
 		debug = input('Enable debug info [y/N]: ') or 'n'
 		commonConfig['Debug'] = debug.lower() == 'y'
