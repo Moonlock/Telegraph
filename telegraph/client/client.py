@@ -60,6 +60,7 @@ class Client(Debuggable):
 			return
 
 		self.timeUnitUsec = sum(dits + dahs + spaces) / INIT_MESSAGE_TIME_UNITS
+		self.cancelUsec = max(3000000, self.timeUnitUsec * 10)
 		self.initTimings.clear()
 		self.debug("Starting with timeunit " + str(int(self.timeUnitUsec/1000)) + "ms")
 		self.startMessage()
@@ -91,7 +92,9 @@ class Client(Debuggable):
 		self.checkFinish()
 
 	def handleRelease(self, pressTimeUsec):
-		if pressTimeUsec < 2*self.timeUnitUsec:
+		if pressTimeUsec >= self.cancelUsec:
+			self.error("Message cancelled")
+		elif pressTimeUsec < 2*self.timeUnitUsec:
 			self.message.append(Symbol.DIT)
 		else:
 			self.message.append(Symbol.DAH)
@@ -101,7 +104,7 @@ class Client(Debuggable):
 		destBounds = [i for i, e in enumerate(self.message) if e == Symbol.WORD_SPACE]
 
 		if len(destBounds) != 2:
-			self.callSignError("Error parsing call sign")
+			self.error("Error parsing call sign")
 			return None
 
 		start = destBounds[0] + 1
@@ -110,7 +113,7 @@ class Client(Debuggable):
 
 		dest = self.destConfig.createDestination(sign)
 		if dest is None:
-			self.callSignError("Call sign not found")
+			self.error("Call sign not found")
 			return None
 
 		self.debug("Sending to " + dest.toString() + ".")
@@ -118,7 +121,7 @@ class Client(Debuggable):
 		self.waitingForDest = False
 		return dest.getEndpoints()
 
-	def callSignError(self, message):
+	def error(self, message):
 		self.listener.error(message + ": Canceling message.")
 		self.sendInProgress.clear()
 		self.message.clear()
