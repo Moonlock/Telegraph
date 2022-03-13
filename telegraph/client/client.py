@@ -26,6 +26,7 @@ class Client(Debuggable):
 		self.message = []
 		self.initTimings = []
 		self.timeUnitUsec = 0
+		self.cancelUsec = 3000000
 		self.pressed = False
 
 		self.destConfig = destConfig

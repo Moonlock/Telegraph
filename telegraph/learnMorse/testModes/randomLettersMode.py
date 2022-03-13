@@ -62,5 +62,5 @@ class RandomLettersMode(TestModeInterface):
 		response = input()
 		master = "".join(self.masterList)
 		print("   " + master)
-		self.checkAnswer(response.upper(), master)
+		self.checkAnswer(response.upper(), master, True)
 
