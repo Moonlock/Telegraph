@@ -105,9 +105,9 @@ messages.
 
 ### Running on Computer
 A Raspberry Pi is not necessary to run this program; it will also run on a computer, using the keyboard instead of GPIO:
-**Telegraph key:** Space bar
-**Delete message:** Backspace or Delete
-**Play message:** Enter
+ - **Telegraph key:** Space bar
+ - **Delete message:** Backspace or Delete
+ - **Play message:** Enter
 
 ### Learn Morse code
 The learn_morse.py tool was created to help beginners learn Morse code.  It consists of playing random characters for a
