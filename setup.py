@@ -34,7 +34,7 @@ def main():
 		print("        Contacts are identified by a callsign that must be sent in the message.")
 		destMode = ""
 		while destMode != 's' and destMode != 'm':
-			destMode = input('Destination mode: ').lower()
+			destMode = input('Contact mode: ').lower()
 		multiDest = destMode == 'm'
 		clientConfig['Multiple Destinations'] = multiDest
 
